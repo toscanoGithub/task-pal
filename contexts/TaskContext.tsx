@@ -8,6 +8,7 @@ import { useUserContext } from './UserContext';
 interface Parent {
     id: string;
     name: string;
+    email: string;
 }
 
 interface Child {
@@ -20,7 +21,7 @@ interface Task {
     task: string;
     date: DateData;
     parent: Parent;
-    child: Child;
+    childName: string;
 }
 
 // Define the TaskContext type
@@ -52,7 +53,7 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
         task: doc.data().task,
         date: doc.data().date,
         parent: doc.data().parent,
-        child: doc.data().childName,
+        childName: doc.data().childName,
     }
         fetchedTasks.push(task)
         

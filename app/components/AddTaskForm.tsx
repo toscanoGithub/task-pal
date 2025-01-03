@@ -5,6 +5,8 @@ import { Formik, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import { Button, Input } from '@ui-kitten/components';
 import theme from "../theme.json"
+import { useTaskContext } from '@/contexts/TaskContext';
+import {Task} from "@/types/Entity"
 
 interface AddTaskFormProps {
     date?: DateData;
@@ -23,6 +25,8 @@ interface FormValues {
 
 const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss}) => {
     const user = {id: "1234567890", email: "parent@taskpal.com", name: "Parent Name"}
+    const {addTaskToContext} = useTaskContext()
+
   return (
     <View>
       <Text style={styles.selectedDate}>{date?.dateString}</Text>
@@ -36,8 +40,9 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss}) => {
             
             onSubmit={values => {
                 // submit form to firestore
-                const task = {...values, parent: {...user}, date, isCompleted: false}
+                const task = {...values, parent: {...user}, date, isCompleted: false} as Task
                 console.log(":::::::::: ", task);
+                addTaskToContext(task);
                 dismiss();
                 
             }}
