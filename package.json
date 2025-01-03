@@ -25,6 +25,7 @@
     "@ui-kitten/eva-icons": "^5.3.1",
     "expo": "~52.0.20",
     "expo-blur": "~14.0.1",
+    "expo-calendar": "~14.0.5",
     "expo-constants": "~17.0.3",
     "expo-font": "^13.0.2",
     "expo-haptics": "~14.0.0",
@@ -36,7 +37,7 @@
     "expo-symbols": "~0.2.0",
     "expo-system-ui": "~4.0.6",
     "expo-web-browser": "~14.0.1",
-    "firebase": "^11.0.2",
+    "firebase": "^11.1.0",
     "formik": "^2.4.6",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -49,12 +50,11 @@
     "react-native-screens": "~4.4.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "^13.12.5",
-    "yup": "^1.4.0",
-    "expo-calendar": "~14.0.5"
+    "yup": "^1.4.0"
   },
   "devDependencies": {
-    "@react-native-community/cli": "latest",
     "@babel/core": "^7.25.2",
+    "@react-native-community/cli": "latest",
     "@types/jest": "^29.5.12",
     "@types/react": "~18.3.12",
     "@types/react-test-renderer": "^18.3.0",
