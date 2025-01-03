@@ -5,6 +5,7 @@ node_modules/
 
 #environement variables
 .env
+app.json
 
 # Expo
 .expo/
