@@ -12,13 +12,15 @@ import { ApplicationProvider, IconRegistry, Layout, Text } from '@ui-kitten/comp
 
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { View } from 'react-native';
+import Header from './components/Header';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState()
+  const [currentUser, setCurrentUser] = useState(true)
 
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
@@ -44,9 +46,19 @@ export default function RootLayout() {
     <ApplicationProvider {...eva} theme={eva.light}>
             <IconRegistry icons={EvaIconsPack}/>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-    <Stack screenOptions={{headerShown: false}}>
-        <Stack.Screen name="(screens)/parent-screen" options={{headerShown: true, title: "Parent", headerBackVisible: false}}/>
-        <Stack.Screen name="(screens)/child-screen" options={{headerShown: true, title:"Child", headerBackVisible: false}}/>
+    <Stack  screenOptions={{headerShown: false}}>
+        <Stack.Screen name="(screens)/parent-screen" 
+        options={{headerShown: true, title: "Parent", headerBackVisible: false,
+          header: (props) => {
+            return <Header  username='Parent' />
+          }
+        }}/>
+        <Stack.Screen name="(screens)/child-screen" 
+        options={{headerShown: true, title:"Child", headerBackVisible: false, 
+          header: (props) => {
+            return <Header username='Child' />
+          }
+        }}/>
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
