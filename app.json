@@ -22,6 +22,16 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+
+    "extra": {
+      "apiKey": "AIzaSyDS7h_5x-ELoIsIjPeFypOXIJ7LYMAv1c0",
+      "authDomain": "task-pal-8fe55.firebaseapp.com",
+      "projectId": "task-pal-8fe55",
+      "storageBucket": "task-pal-8fe55.firebasestorage.app",
+      "messagingSenderId": "246602949918",
+      "appId": "1:246602949918:web:4a33a6848540170846950f"
+    },
+    
     "plugins": [
       "expo-router",
       [

@@ -1,11 +1,12 @@
 import {Modal, SafeAreaView, StyleSheet, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Text } from '@ui-kitten/components'
 import { Calendar, DateData } from 'react-native-calendars';
 import theme from "../theme.json"
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AddTaskForm from '../components/AddTaskForm';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTaskContext } from '@/contexts/TaskContext';
 
 // Define a custom type for the day object returned by onDayPress
 interface DayPressObject {
@@ -17,6 +18,9 @@ interface DayPressObject {
 
 
 const ParentScreen = () => {
+  // task context
+  const {tasks} = useTaskContext()
+
   const [modalIsVisible, setModalIsVisible] = useState(false)
   const [selectedDate, setSelectedDate] = useState<DateData>()
   // Handler for when a day is pressed
@@ -27,6 +31,12 @@ const ParentScreen = () => {
     setModalIsVisible(!modalIsVisible)
     
   };
+
+  useEffect(() => {
+    console.log("::::::::", tasks);
+    
+  }, [])
+  
 
   return (
     <SafeAreaView style={styles.container}>
