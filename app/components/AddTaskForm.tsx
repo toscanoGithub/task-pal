@@ -27,6 +27,8 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss}) => {
     const user = {id: "1234567890", email: "parent@taskpal.com", name: "Parent Name"}
     const {addTaskToContext} = useTaskContext()
 
+    
+
   return (
     <View>
       <Text style={styles.selectedDate}>{date?.dateString}</Text>
@@ -43,8 +45,7 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss}) => {
                 const task = {...values, parent: {...user}, date, isCompleted: false} as Task
                 console.log(":::::::::: ", task);
                 addTaskToContext(task);
-                dismiss();
-                
+                dismiss();  
             }}
         >
     {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue, resetForm }) => 
