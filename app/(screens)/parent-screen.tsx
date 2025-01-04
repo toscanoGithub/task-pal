@@ -7,6 +7,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AddTaskForm from '../components/AddTaskForm';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTaskContext } from '@/contexts/TaskContext';
+import { MarkedDates } from 'react-native-calendars/src/types';
 
 // Define a custom type for the day object returned by onDayPress
 interface DayPressObject {
@@ -23,19 +24,26 @@ const ParentScreen = () => {
 
   const [modalIsVisible, setModalIsVisible] = useState(false)
   const [selectedDate, setSelectedDate] = useState<DateData>()
+const [daysWithTasks, setDaysWithTasks] = useState<MarkedDates>()
+
   // Handler for when a day is pressed
   const handleDayPress = (date: DateData) => {
     // Selected day: {"dateString": "2025-01-01", "day": 1, "month": 1, "timestamp": 1735689600000, "year": 2025}
     if(date.dateString < new Date().toLocaleDateString()) return;
     setSelectedDate(date)
     setModalIsVisible(!modalIsVisible)
-    
   };
 
   useEffect(() => {
-    console.log("::::::::", tasks);
     
-  }, [])
+    const tasksDates = tasks.map(task => task.date)
+    
+    // '2025-01-05': {selected: true, marked: false, selectedColor: 'orange'},
+    tasksDates.forEach(td => setDaysWithTasks(prev => {
+      return {...prev, [td.dateString]: {selected: true, marked: false, selectedColor: 'orange'}}
+    }))
+    
+  }, [tasks])
   
 
   return (
@@ -47,12 +55,12 @@ const ParentScreen = () => {
       
       <View style={styles.calendarContainer}>
       <Calendar
-      theme={{calendarBackground: "#617BB310", }}
+      theme={{calendarBackground: "#617BB310",}}
           // Set the currently visible month
           date={'2025-01-01'} // Use 'date' instead of 'current'
           // Minimum and Maximum dates that can be selected
           minDate={new Date().toLocaleDateString()}
-          maxDate={'2025-12-31'}
+          maxDate={'2030-12-31'}
           // Handler which gets executed on day press
           onDayPress={handleDayPress}
           // Month format
@@ -65,7 +73,7 @@ const ParentScreen = () => {
           )}
           // Mark specific dates
           markedDates={{
-            
+            ...daysWithTasks
           }}
         />
       </View>
@@ -87,7 +95,7 @@ const ParentScreen = () => {
             </Button>
 
               {/* ADD TASK FORM */}
-              <AddTaskForm date={selectedDate} dismiss={() => setModalIsVisible(!modalIsVisible)} />
+              <AddTaskForm  date={selectedDate} dismiss={() => setModalIsVisible(!modalIsVisible)} />
             </View>
           </View>
     </Modal>
@@ -105,18 +113,20 @@ const styles = StyleSheet.create({
 
   header: {
     paddingVertical: 20,
-    marginBottom: 30
+    marginBottom: 30,
+    paddingHorizontal: 10
   },
 
   greetings: {
-    fontWeight: 100,
+    fontWeight: 700,
+    fontSize: 16,
+    lineHeight: 24
   },
 
   instructions: {
     fontSize: 16,
     fontWeight: 300,
     color: "#2B2B2B",
-    marginVertical: 5,
   },
 
   calendarContainer: {
