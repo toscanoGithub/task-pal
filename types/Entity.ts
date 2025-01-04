@@ -13,8 +13,8 @@ export interface Child {
 // Define the Task type
 export interface Task {
     id?: string;
-    task: string;
     date: DateData;
     parent: Parent;
     childName: string;
+    description: string
 }

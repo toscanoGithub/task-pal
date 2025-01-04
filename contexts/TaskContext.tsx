@@ -1,5 +1,5 @@
 import db from '@/firebase/firebase-config';
-import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { DateData } from 'react-native-calendars';
@@ -18,7 +18,7 @@ interface Child {
 // Define the Task type
 interface Task {
     id?: string;
-    task: string;
+    description: string;
     date: DateData;
     parent: Parent;
     childName: string;
@@ -28,6 +28,7 @@ interface Task {
 interface TaskContextType {
     tasks: Task[];
     addTaskToContext: (task: Task) => void;
+    editTaskInContext: (task: Task) => void;
     getTaskById: (id: string) => Task | undefined;
 }
 
@@ -50,7 +51,7 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
       querySnapshot.forEach((doc) => {
        const task: Task = {
         id: doc.id,
-        task: doc.data().task,
+        description: doc.data().task,
         date: doc.data().date,
         parent: doc.data().parent,
         childName: doc.data().childName,
@@ -81,6 +82,43 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
         
     };
 
+    const editTaskInContext = async (task: any) => {
+        // Query the doc to edit
+            const q = query(collection(db, "tasks"), where("date", "==", task.date));
+            const querySnapshot = await getDocs(q);
+            if(querySnapshot.empty) {
+            console.log("no Task registered yet")
+            } else {
+            querySnapshot.forEach(async (currentDoc) => {
+            // const task: Task = {
+            //     id: doc.id,
+            //     task: doc.data().task,
+            //     date: doc.data().date,
+            //     parent: doc.data().parent,
+            //     childName: doc.data().childName,
+            // }
+
+            const docRef = doc(db, 'tasks', currentDoc.id); // 'users' collection, 'user123' document ID
+
+            // Update the document
+            try {
+                await updateDoc(docRef, {
+                    ...task
+                });
+
+                console.log('Document successfully updated!');
+                fetchTasks()
+            } catch (error) {
+                console.error('Error updating document: ', error);
+            }
+            
+                
+            });
+            
+            }
+        
+    };
+
     const getTaskById = (id: string) => {
         return tasks.find((task) => task.id === id);
     };
@@ -88,7 +126,7 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
     
 
     return (
-        <TaskContext.Provider value={{ tasks, addTaskToContext, getTaskById }}>
+        <TaskContext.Provider value={{ tasks, addTaskToContext, editTaskInContext, getTaskById }}>
             {children}
         </TaskContext.Provider>
     );
