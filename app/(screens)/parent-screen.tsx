@@ -87,8 +87,7 @@ const [daysWithTasks, setDaysWithTasks] = useState<MarkedDates>()
         colors={[theme["gradient-from"], theme["gradient-to"]]}
         style={styles.background}
       />
-              {/* MODAL TITLE */}
-              <Text category='h4' style={styles.modalTitle}>Add Task</Text>
+              
               {/* CLOSE BUTTON */}
               <Button style={styles.closeBtn} onPress={() => setModalIsVisible(!modalIsVisible)}>
                 <MaterialCommunityIcons name="close" size={32} color="red" />
@@ -176,12 +175,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
-  modalTitle: {
-    marginTop: 60,
-    marginBottom:0,
-    textAlign: 'center',
-    color: "#EDB232"
-  },
+  
 
   closeBtn: {
     position: "absolute",

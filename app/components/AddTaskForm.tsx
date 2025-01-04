@@ -1,12 +1,12 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, View } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { DateData } from 'react-native-calendars'
 import { Formik, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
-import { Button, Input } from '@ui-kitten/components';
+import { Button, Input, Text } from '@ui-kitten/components';
 import theme from "../theme.json"
 import { useTaskContext } from '@/contexts/TaskContext';
-import {Task} from "@/types/Entity"
+import { Task } from '@/types/Entity';
 
 interface AddTaskFormProps {
     date?: DateData;
@@ -14,38 +14,60 @@ interface AddTaskFormProps {
 }
 
 interface FormValues {
-    task: string;
+    description: string;
     childName: string;
   };
 
   const validationSchema = Yup.object().shape({
-    task: Yup.string().required("Task description is required"),
+    description: Yup.string().required("Task description is required"),
     childName: Yup.string().required("Child name is required"),
   });
 
 const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss}) => {
     const user = {id: "1234567890", email: "parent@taskpal.com", name: "Parent Name"}
-    const {addTaskToContext} = useTaskContext()
+    const {tasks, addTaskToContext, editTaskInContext} = useTaskContext()
 
+    const [currentDayTask, setCurrentDayTask] = useState<Task>()
+
+    useEffect(() => {
+      const tasksInCurrentDay = tasks.filter(task => task.id !== null && task.date.timestamp === date?.timestamp)
+      setCurrentDayTask(tasksInCurrentDay[0])
+      
+      
+    }, [tasks])
+    
     
 
   return (
     <View>
+      {/* MODAL TITLE */}
+      <Text category='h4' style={styles.modalTitle}>{currentDayTask ? "Edit Task" : "Add Task"}</Text>
       <Text style={styles.selectedDate}>{date?.dateString}</Text>
         {/* Form */}
         <Formik 
             initialValues={{
-                task: "",
-                childName: ""
+              description: currentDayTask?.description ?? "",
+              childName: currentDayTask?.childName ?? ""
             }}
             validationSchema={validationSchema}
             
             onSubmit={values => {
+                console.log(":::::::::::: submit form ::::::::::::::");
+                
                 // submit form to firestore
-                const task = {...values, parent: {...user}, date, isCompleted: false} as Task
-                console.log(":::::::::: ", task);
-                addTaskToContext(task);
-                dismiss();  
+                if (!currentDayTask) {
+                    // Add new task
+                    const task = {...values, parent: {...user}, date, isCompleted: false} as Task
+                    console.log(":::::::::: ", task);
+                    addTaskToContext(task);
+                } else {
+                    // Edit existing task
+                    const task = {...values, parent: {...user}, date, isCompleted: false} as Task
+                    editTaskInContext(task)
+                }
+
+                dismiss()
+                
             }}
         >
     {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue, resetForm }) => 
@@ -54,18 +76,18 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss}) => {
                     {/* FULL NAME */}
                     <Input
                         style={styles.input}
-                        placeholder='Task description'
-                        value={values.task}
-                        onChangeText={handleChange('task')}
-                    onBlur={handleBlur('task')}
-                    status={touched.task && errors.task ? 'danger' : 'basic'}
+                        placeholder={`${currentDayTask ? currentDayTask.childName : 'Task description'}`}
+                        value={ values.description}
+                        onChangeText={handleChange('description')}
+                    onBlur={handleBlur('description')}
+                    status={touched.description && errors.description ? 'danger' : 'basic'}
                     />
-                    {touched.task && errors.task && <Text style={styles.errorText}>{errors.task}</Text>}
+                     {touched.description && errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
 
                     {/* CHILD NAME */}
                     <Input
                         style={styles.input}
-                        placeholder='Child name'
+                        placeholder={`${currentDayTask ? currentDayTask.childName : 'Child name'}`}
                         value={values.childName}
                         onChangeText={handleChange('childName')}
                         onBlur={handleBlur('childName')}
@@ -78,7 +100,9 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss}) => {
                         // resetForm()
                         
                     }} style={styles.submitBtn} status="primary">
-                        {evaProps => <Text style={{...evaProps, color:"#EDB232", fontSize: 20}} >Add Task</Text>}
+                        {evaProps => <Text style={{...evaProps, color:"#EDB232", fontSize: 20}} >
+                            {currentDayTask ? "Edit task" : "Add new task"}    
+                        </Text>}
                     </Button>
 
             </View>
@@ -94,11 +118,17 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss}) => {
 export default AddTaskForm
 
 const styles = StyleSheet.create({
+  modalTitle: {
+    marginTop: 30,
+    marginBottom:0,
+    textAlign: 'center',
+    color: "#EDB232"
+  },
     selectedDate: {
         textAlign:"center",
-        marginVertical: 10,
+        marginVertical: 5,
         color:"#DDCA87",
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 100,
     },
     inputsWrapper: {
