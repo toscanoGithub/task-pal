@@ -183,10 +183,8 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
         width:"100%",
-        transitionDuration: "3s",
-        transitionDelay: "3s"
+        borderTopColor: "#fff",
         
-    
     },
         
       button: {

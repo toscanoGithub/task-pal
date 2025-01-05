@@ -58,15 +58,15 @@ const SignupForm: React.FC<signupProp> = ({ dismissModal, iHaveFocus }) => {
     }
 }
 
-const addMoreDataToUser = async (email: string, name: string, isHost: boolean) => {
+const addMoreDataToUser = async (email: string, name: string, isChild: boolean) => {
 try {
 const docRef = await addDoc(collection(db, "users"), {
   email,
   name, 
-  isHost: true 
+  isChild: false 
 });
 
-setUser({id: docRef.id, email: email, name: name, isHost: true})  
+setUser({id: docRef.id, email: email, name: name, isChild: false})  
 dismissModal()
 router.push("/(screens)/parent-screen")    
 } catch (e) {
@@ -78,11 +78,11 @@ console.error("Error adding document: ", e);
       
     <Formik 
         initialValues={{
-          email: 'cocot@taskpal.com',
-          password: 'qwerty',
-          confirmPassword: 'qwerty',
-          name: 'Coralie',
-          isHost: true,
+          email: '',
+          password: '',
+          confirmPassword: '',
+          name: '',
+          isChild: false,
         }}
         validationSchema={validationSchema}
         onSubmit={values => register(values)}

@@ -3,6 +3,7 @@ import React from 'react'
 import theme from "../theme.json"
 import { Button, Icon, IconElement, Text } from '@ui-kitten/components'
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useUserContext } from '@/contexts/UserContext';
 
 interface HeaderProps {
     username: string;
@@ -11,10 +12,12 @@ interface HeaderProps {
 
 
 const Header: React.FC<HeaderProps> = ({username}) => {
+  const {user} = useUserContext()
+
   return (
     <View style={styles.container}>
       <View style={styles.row}>
-        <Text style={styles.username} category='h6'>{username}</Text>
+        <Text style={styles.username} category='h6'>{user?.name }</Text>
         <TouchableOpacity>
         <Ionicons name="exit-outline" size={34} color="#EDB232" />
         </TouchableOpacity>
