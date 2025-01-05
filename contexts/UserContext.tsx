@@ -4,7 +4,7 @@ type AuthUser = {
     id?: string;
     email: string;
     name: string;
-    isHost: boolean;
+    isChild: boolean;
     
 };
 

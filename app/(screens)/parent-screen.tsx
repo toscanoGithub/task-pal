@@ -9,6 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTaskContext } from '@/contexts/TaskContext';
 import { MarkedDates } from 'react-native-calendars/src/types';
 import Gradient from '../components/Gradient';
+import { useUserContext } from '@/contexts/UserContext';
 
 // Define a custom type for the day object returned by onDayPress
 interface DayPressObject {
@@ -27,6 +28,7 @@ const ParentScreen = () => {
   const [selectedDate, setSelectedDate] = useState<DateData>()
   const [daysWithTasks, setDaysWithTasks] = useState<MarkedDates>()
   const [expandedModal, setExpandedModal] = useState(false)
+  const {user} = useUserContext()
 
   // Handler for when a day is pressed
   const handleDayPress = (date: DateData) => {
@@ -77,7 +79,10 @@ const ParentScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-      <Text style={styles.greetings} category='h4'>Welcome, Parent</Text>
+     <View style={{flexDirection:"row", alignItems: "center"}}>
+     <Text style={styles.greetings} category='h4'>Welcome, </Text>
+     <Text style={styles.greetings} category='h4'>{user?.name}</Text>
+     </View>
       <Text style={styles.instructions} category='s2'>Interact with the calendar below to add manage tasks for your child.</Text>
       </View>
       

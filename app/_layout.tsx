@@ -21,6 +21,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const router = useRouter();
+  
   const [currentUser, setCurrentUser] = useState(false)
 
   const colorScheme = useColorScheme();
