@@ -8,6 +8,13 @@ export interface User {
     isChild: boolean;
 }
 
+export interface FamilyMember {
+    id: string;
+    name: string;
+    passcode: string;
+    email: string;
+}
+
 
 export interface Parent {
     id: string;
@@ -20,6 +27,8 @@ export interface Parent {
 export interface Child {
     id: string;
     name: string;
+    code: string;
+    email: string;
 }
 // Define the Task type
 export interface Task {

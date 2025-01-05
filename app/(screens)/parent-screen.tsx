@@ -10,6 +10,9 @@ import { useTaskContext } from '@/contexts/TaskContext';
 import { MarkedDates } from 'react-native-calendars/src/types';
 import Gradient from '../components/Gradient';
 import { useUserContext } from '@/contexts/UserContext';
+import ActionSheetAddButton from '../components/action-sheet-add-button';
+import { Alert } from 'react-native';
+import AddFamilyMember from '../components/AddFamilyMemberForm';
 
 // Define a custom type for the day object returned by onDayPress
 interface DayPressObject {
@@ -29,11 +32,18 @@ const ParentScreen = () => {
   const [daysWithTasks, setDaysWithTasks] = useState<MarkedDates>()
   const [expandedModal, setExpandedModal] = useState(false)
   const {user} = useUserContext()
-
+  const [modalType, setModalType] = useState<string>("ADD_TASK")
   // Handler for when a day is pressed
   const handleDayPress = (date: DateData) => {
     // Selected day: {"dateString": "2025-01-01", "day": 1, "month": 1, "timestamp": 1735689600000, "year": 2025}
     if(date.dateString < new Date().toLocaleDateString()) return;
+
+    // No child?
+    if(!user?.members?.length) {
+      Alert.alert("You nedd to add a child")
+      return;
+    }
+  
     setSelectedDate(date)
     setModalIsVisible(!modalIsVisible)
   };
@@ -126,11 +136,22 @@ const ParentScreen = () => {
                 <MaterialCommunityIcons name="close" size={32} color="red" />
             </Button>
 
-              {/* ADD TASK FORM */}
-              <AddTaskForm iHaveFocus={handleFormHasFocus}  date={selectedDate} dismiss={() => setModalIsVisible(!modalIsVisible)} />
+              {
+                modalType === "ADD_TASK" ? 
+                <AddTaskForm iHaveFocus={handleFormHasFocus}  date={selectedDate} dismiss={() => setModalIsVisible(!modalIsVisible)} />
+              : 
+                <AddFamilyMember iHaveFocus={handleFormHasFocus} dismiss={() => setModalIsVisible(!modalIsVisible)} addedBy={user!.name} />
+              }
             </Animated.View>
           </View>
     </Modal>
+
+    <ActionSheetAddButton type="ADD_MEMBER" onPress={function (): void {
+      console.log("::::::::::::: + :::::::::::::");
+      
+          setModalType("ADD_MEMBER")
+          setModalIsVisible(true)
+      } } iconName={'add'}  />
     </SafeAreaView>
   )
 }
