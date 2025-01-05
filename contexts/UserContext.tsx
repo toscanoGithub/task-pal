@@ -3,6 +3,8 @@ import React, { createContext, ReactNode, useContext, useState } from 'react';
 type AuthUser = {
     id?: string;
     email: string;
+    name: string;
+    isHost: boolean;
     
 };
 

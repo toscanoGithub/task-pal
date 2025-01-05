@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, View, Dimensions, Pressable, Modal, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity} from 'react-native'
+import { SafeAreaView, StyleSheet, View, Dimensions, Pressable, Modal, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert, Animated} from 'react-native'
 import React, { useState } from 'react'
 import { Button, Divider, Icon, IconElement, Layout, Text } from '@ui-kitten/components'
 import theme from "../theme.json"
@@ -6,6 +6,9 @@ import { Link, useRouter } from 'expo-router'
 import SignupForm from '../components/signup-form'
 import SigninForm from '../components/signin-form'
 import { MaterialCommunityIcons } from '@expo/vector-icons'; // Alternative icon library
+import { LinearGradient } from 'expo-linear-gradient'
+import Gradient from '../components/Gradient'
+import { BlurView } from 'expo-blur'
 
 const closeIcon = (props: any): IconElement => (
     <Icon
@@ -17,20 +20,48 @@ const closeIcon = (props: any): IconElement => (
   );
 
 const auth = () => {
+  // Create an Animated Value for height
+    const modalHeight = useState(new Animated.Value(0))[0];
     const {width, height} = Dimensions.get('screen')
     const router = useRouter()
     const [modalIsVisible, setModalIsVisible] = useState<boolean>(false)
     const [modalType, setModalType] = useState("SIGN IN")
     const [isrewardDay, setIsrewardDay] = useState(false)
+    const [expandedModal, setExpandedModal] = useState(false)
+    
     const dismissModal = () => {
-        setModalIsVisible(true)
+      setExpandedModal(false)
+      // Animate height between 80% and 100% of the screen height
+      Animated.timing(modalHeight, {
+        toValue: 0, // 0.8 -> 80% and 1 -> 100%
+        duration: 500, // 3 seconds for the transition
+        useNativeDriver: false, // We can't animate height with native driver
+        
+      }).start();
+
+        setModalIsVisible(false)
+        setExpandedModal(false)
       };
+
+      
+      const handleFormHasFocus = () => {
+          setExpandedModal(true)
+        // Animate height between 80% and 100% of the screen height
+        Animated.timing(modalHeight, {
+          toValue: 0.95, // 0.8 -> 80% and 1 -> 100%
+          duration: 500, // 3 seconds for the transition
+          useNativeDriver: false, // We can't animate height with native driver
+        }).start();
+         
+
+        setModalIsVisible(true)
+      }
 
   return (
 
      
-    <SafeAreaView style={[styles.container, {marginTop: height * 0.10}]}>
-        
+    <View style={styles.container}>
+      <Gradient />
       <View style={styles.buttonsRow}>
         {/* SIGN IN BUTTON */}
         <Button onPress={() => {
@@ -49,90 +80,98 @@ const auth = () => {
 
        {/* HERO TEXT */}
       </View>
-      <View style={[styles.instructions, {minHeight: height * 0.9}]}>
-        <Text category='h1' status='primary' style={[styles.instructionsText, {marginTop: -200}]}  >
+      <View style={styles.instructions}>
+      
+        <Text category='h1' status='primary' style={[styles.instructionsText, {marginTop: -200, fontSize: height*0.06}]}  >
             Enter
         </Text>
 
-        <Text style={styles.instructionsText} category='h1' status='primary'  >
+        <Text style={[styles.instructionsText, {fontSize: height*0.06}]} category='h1' status='primary'  >
             Complete tasks
         </Text>
 
-        <Text style={styles.instructionsText} category='h1' status='primary'  >
-            Be happy!
+        <Text style={[styles.instructionsText, {fontSize: height*0.06}]} category='h1' status='primary'  >
+            Be happy
         </Text>
       </View>
       
       
       <Modal animationType="slide" transparent={true} visible={modalIsVisible}>
       <View style={styles.centeredView}>    
-            <View style={styles.modalView}>
+            <Animated.View style={[styles.modalView, {height: modalHeight.interpolate({
+            inputRange: [0, 1], // Mapping values (0 -> 80%, 1 -> 100%)
+            outputRange: ['80%', '95%'],
+          }),}]}>
+              <Gradient />
               {/* MODAL TITLE */}
               <Text category='h4' style={styles.modalTitle}>{modalType}</Text>
               {/* CLOSE BUTTON */}
-              <Button style={styles.closeBtn} onPress={() => setModalIsVisible(false)}>
-                <MaterialCommunityIcons name="close" size={24} color="black" />
+              <Button style={styles.closeBtn} onPress={() => dismissModal()}>
+                <MaterialCommunityIcons name="close" size={24} color="red" />
             </Button>
 
               {/* AUTH FORM */}
-              {modalType === "SIGN UP" ? <SignupForm dismissModal={dismissModal} /> : <SigninForm dismissModal={dismissModal} />}
-            </View>
+              {modalType === "SIGN UP" ? <SignupForm iHaveFocus={handleFormHasFocus} dismissModal={dismissModal} /> : <SigninForm iHaveFocus={handleFormHasFocus} dismissModal={dismissModal} />}
+            </Animated.View>
           </View>
     </Modal>
       
       
         
-    </SafeAreaView>
+    </View>
   )
 }
 
 export default auth
 
 const styles = StyleSheet.create({
+  
     container: {
-        
+        flex: 1,
+        backgroundColor: theme["gradient-from"],
+
     },
 
+  
+
     buttonsRow: {
-        flexDirection:"row",
-        justifyContent:"center", 
-        alignItems:"center",
-        columnGap: 10
+      marginVertical: 100,
+      flexDirection:"row",
+      justifyContent:"center", 
+      alignItems:"center",
+      columnGap: 10,
     },
 
    
-    link: {
-        paddingTop: 20,
-        fontSize: 20,
-        color:"white"
-        },
+    
     
 
     authBtn: {
-         borderRadius: 30, paddingHorizontal: 30, backgroundColor: theme["h-1-text-color"], 
+         borderRadius: 30, paddingHorizontal: 30, backgroundColor: "transparent",  borderColor: theme["secondary"]
     },
 
     instructions: {
-        justifyContent:"center", alignItems:"flex-start", padding: 10
+        justifyContent:"center", alignItems:"flex-start", rowGap: 30, flex: 1, paddingHorizontal: 10, 
     },
 
     instructionsText: {
-        fontSize: 45, lineHeight: 70, color: theme["h-1-text-color"]
+         color: theme["secondary"]
     },
 
 
     // modal
     centeredView: {
         flex: 1,
-        position:"relative"
+        position:"relative",
+        
       },
       modalView: {
         position:"absolute",
         bottom:0,
         left:0, right:0,
-        backgroundColor: '#ffffff',
-        borderTopLeftRadius: 45,
-        // padding: 35,
+        backgroundColor: theme["h-1-text-color"],
+        borderTopLeftRadius: 30,
+        overflow: "hidden",
         alignItems: 'center',
         paddingHorizontal: 10,
         shadowColor: '#000',
@@ -143,10 +182,13 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
-        height:"80%",
         width:"100%",
+        transitionDuration: "3s",
+        transitionDelay: "3s"
         
-      },
+    
+    },
+        
       button: {
         borderRadius: 20,
         padding: 10,
@@ -159,9 +201,9 @@ const styles = StyleSheet.create({
         textAlign: 'center',
       },
       modalTitle: {
-        marginTop: 60,
-        marginBottom:0,
+        marginTop: 40,
         textAlign: 'center',
+        color: theme["secondary"]
       },
 
       closeBtn: {
@@ -171,8 +213,9 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 30,
         borderBottomRightRadius: 5,
         borderTopRightRadius: 0,
-        borderWidth: 0,
-        backgroundColor:theme["h-1-text-color"]
+        borderWidth: 1,
+        borderColor: "#DDCA8770",
+        backgroundColor:"transparent"
 
       },
 
@@ -198,5 +241,11 @@ const styles = StyleSheet.create({
       title: {
         color: '#fff',
         fontSize: 16,
+      },
+
+      gradientBackground: {
+        padding: 10,
+        borderRadius: 5, // Optional: Add rounded corners if needed
+        overflow: 'hidden', // Make sure gradient doesn't overflow text area
       },
 })

@@ -1,19 +1,189 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, Switch, Text, View } from 'react-native'
+import React, { useState } from 'react'
+import { Formik, FormikHelpers } from 'formik';
+import * as Yup from 'yup';
+import { Input, Button, Toggle } from '@ui-kitten/components';
+import theme from "../theme.json"
 
 
-interface signinProp {
+// Firebase
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, Auth } from "firebase/auth";
+import "../../firebase/firebase-config";
+
+import { collection, addDoc, query, where, getDocs, doc } from "firebase/firestore"; 
+import db from '../../firebase/firebase-config';
+import { router } from 'expo-router';
+import { useUserContext } from '@/contexts/UserContext';
+interface signupProp {
   dismissModal: () => void;  // Defining the function prop type
+  iHaveFocus: () => void;
 }
 
-const SigninForm: React.FC<signinProp> = ({ dismissModal }) => {
+
+interface FormValues {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  isHost: boolean;
+}
+
+const validationSchema = Yup.object().shape({
+  name: Yup.string().required("Name is required"),
+  email: Yup.string().email("Not a valid email").required('Email is required'),
+  password: Yup.string().required('Password is required').min(6, 'Password is too short'),
+  confirmPassword: Yup.string()
+    .required('Password confirmation is required')
+    .oneOf([Yup.ref('password'), ""], "Passwords don't match"),
+});
+
+const SigninForm: React.FC<signupProp> = ({ dismissModal, iHaveFocus }) => {
+  const {setUser} = useUserContext();
+  const [checked, setChecked] = useState(false)
+  // REGISTER LOGIC
+ const login = (values: FormValues) => {
+    
+}
+
+
+
+const [isEnabled, setIsEnabled] = useState(false);
+const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+
+
+
+
   return (
     <View>
-      <Text>SigninForm</Text>
+      <View style={{flexDirection:"row", justifyContent:"flex-start", alignItems:"center", columnGap: 10, marginTop: 30, marginBottom: 0}}>
+        <Switch
+          trackColor={{false: theme["gradient-to"], true: theme["gradient-to"]}}
+          thumbColor={isEnabled ? theme["secondary"] : theme["gradient-to"]}
+          ios_backgroundColor="secondary"
+          onValueChange={toggleSwitch}
+          value={isEnabled}
+        /> 
+        <Text style={{fontSize: 20, color: `${isEnabled ? theme["secondary"] : theme["gradient-to"]}`}}>I'm a Parent</Text>
+      </View>
+    <Formik 
+        initialValues={{
+          email: 'malik@snow.com',
+          password: 'qwerty',
+          confirmPassword: 'qwerty',
+          name: 'Coralie',
+          isHost: true,
+        }}
+        validationSchema={validationSchema}
+        onSubmit={values => login(values)}
+      
+      >
+
+{({ handleChange, handleBlur, handleSubmit, values, errors, touched, resetForm }) => 
+
+<View style={styles.inputsWrapper}>
+
+
+  
+  {/* Name */}
+  <Input
+          style={styles.input}
+          placeholder='Your name'
+          value={values.name}
+          onChangeText={handleChange('name')}
+          onBlur={handleBlur('name')}
+          onFocus={iHaveFocus}
+          status={touched.name && errors.name ? 'danger' : 'basic'}
+        />
+        {touched.name && errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+
+
+  {/* EMAIL */}
+        <Input
+          style={styles.input}
+          placeholder='Email'
+          value={values.email}
+          onChangeText={handleChange('email')}
+          onBlur={handleBlur('email')}
+          onFocus={iHaveFocus}
+          status={touched.email && errors.email ? 'danger' : 'basic'}
+        />
+        {touched.email && errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+
+
+{/* PASSWORD */}
+        <Input
+          style={styles.input}
+          placeholder='Password'
+          value={values.password}
+          onChangeText={handleChange('password')}
+          onBlur={handleBlur('password')}
+          onFocus={iHaveFocus}
+          status={touched.password && errors.password ? 'danger' : 'basic'}
+        />
+        {touched.password && errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+
+
+{/* CONFIRM PASSWORD */}
+        <Input
+          style={styles.input}
+          placeholder='Confirm password'
+          value={values.confirmPassword}
+          onChangeText={handleChange('confirmPassword')}
+          onBlur={handleBlur('confirmPassword')}
+          onFocus={iHaveFocus}
+          status={touched.confirmPassword && errors.confirmPassword ? 'danger' : 'basic'}
+        />
+        {touched.confirmPassword && errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
+
+
+        <Button style={styles.submitBtn} status="primary" onPress={() => {
+          handleSubmit()
+        }} >
+          Register
+        </Button>
+</View>
+
+}
+
+      </Formik>
     </View>
   )
 }
 
 export default SigninForm
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  inputsWrapper: {
+    flex: 1,
+    width:"100%",
+    marginTop: 30,
+  },
+
+  input: {
+    width:"100%",
+    paddingVertical: 10,
+    backgroundColor:"#cccccc"
+  },
+
+  errorText: {
+    color: 'red',
+    marginTop: -10,
+    marginBottom: 10,
+  },
+
+  submitBtn: {
+    marginTop: 15,
+    backgroundColor: theme["h-1-text-color"],
+    borderColor:"#fefefe40",
+    borderRadius: 30
+  },
+
+  button: {
+    width: "100%",
+    height: 50,
+    borderRadius: 30,
+  },
+  buttonPressed: {
+    opacity: 0.5,  // Change the opacity when button is pressed
+  },
+})

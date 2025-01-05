@@ -1,4 +1,4 @@
-import {Modal, SafeAreaView, StyleSheet, View } from 'react-native'
+import {Animated, Modal, SafeAreaView, StyleSheet, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Button, Text } from '@ui-kitten/components'
 import { Calendar, DateData } from 'react-native-calendars';
@@ -8,6 +8,7 @@ import AddTaskForm from '../components/AddTaskForm';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTaskContext } from '@/contexts/TaskContext';
 import { MarkedDates } from 'react-native-calendars/src/types';
+import Gradient from '../components/Gradient';
 
 // Define a custom type for the day object returned by onDayPress
 interface DayPressObject {
@@ -21,10 +22,11 @@ interface DayPressObject {
 const ParentScreen = () => {
   // task context
   const {tasks} = useTaskContext()
-
+  const modalHeight = useState(new Animated.Value(0))[0];
   const [modalIsVisible, setModalIsVisible] = useState(false)
   const [selectedDate, setSelectedDate] = useState<DateData>()
-const [daysWithTasks, setDaysWithTasks] = useState<MarkedDates>()
+  const [daysWithTasks, setDaysWithTasks] = useState<MarkedDates>()
+  const [expandedModal, setExpandedModal] = useState(false)
 
   // Handler for when a day is pressed
   const handleDayPress = (date: DateData) => {
@@ -35,9 +37,7 @@ const [daysWithTasks, setDaysWithTasks] = useState<MarkedDates>()
   };
 
   useEffect(() => {
-    
     const tasksDates = tasks.map(task => task.date)
-    
     // '2025-01-05': {selected: true, marked: false, selectedColor: 'orange'},
     tasksDates.forEach(td => setDaysWithTasks(prev => {
       return {...prev, [td.dateString]: {selected: true, marked: false, selectedColor: 'orange'}}
@@ -45,6 +45,34 @@ const [daysWithTasks, setDaysWithTasks] = useState<MarkedDates>()
     
   }, [tasks])
   
+
+  const dismissModal = () => {
+        setExpandedModal(false)
+        // Animate height between 80% and 100% of the screen height
+        Animated.timing(modalHeight, {
+          toValue: 0, // 0.8 -> 80% and 1 -> 100%
+          duration: 500, // 3 seconds for the transition
+          useNativeDriver: false, // We can't animate height with native driver
+          
+        }).start();
+  
+          setModalIsVisible(false)
+          setExpandedModal(false)
+        };
+  
+        
+        const handleFormHasFocus = () => {
+            setExpandedModal(true)
+          // Animate height between 80% and 100% of the screen height
+          Animated.timing(modalHeight, {
+            toValue: 0.95, // 0.8 -> 80% and 1 -> 100%
+            duration: 500, // 3 seconds for the transition
+            useNativeDriver: false, // We can't animate height with native driver
+          }).start();
+           
+  
+          setModalIsVisible(true)
+        }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -81,21 +109,21 @@ const [daysWithTasks, setDaysWithTasks] = useState<MarkedDates>()
      {/* Modal */}
      <Modal animationType="slide" transparent={true} visible={modalIsVisible}>
       <View style={styles.centeredView}>    
-            <View style={styles.modalView}>
-            <LinearGradient
-        // Background Linear Gradient
-        colors={[theme["gradient-from"], theme["gradient-to"]]}
-        style={styles.background}
-      />
+            <Animated.View style={[styles.modalView, {height: modalHeight.interpolate({
+            inputRange: [0, 1], // Mapping values (0 -> 80%, 1 -> 100%)
+            outputRange: ['80%', '95%'],
+          }),}]}>
+            
+            <Gradient />
               
               {/* CLOSE BUTTON */}
-              <Button style={styles.closeBtn} onPress={() => setModalIsVisible(!modalIsVisible)}>
+              <Button style={styles.closeBtn} onPress={() => dismissModal()}>
                 <MaterialCommunityIcons name="close" size={32} color="red" />
             </Button>
 
               {/* ADD TASK FORM */}
-              <AddTaskForm  date={selectedDate} dismiss={() => setModalIsVisible(!modalIsVisible)} />
-            </View>
+              <AddTaskForm iHaveFocus={handleFormHasFocus}  date={selectedDate} dismiss={() => setModalIsVisible(!modalIsVisible)} />
+            </Animated.View>
           </View>
     </Modal>
     </SafeAreaView>
@@ -160,7 +188,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    height:"80%",
     width:"100%",
     
   },
@@ -185,16 +212,10 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 5,
     borderTopRightRadius: 0,
     borderWidth: 1,
-    borderColor: "#cccccc",
-    backgroundColor:theme["h-1-text-color"]
+    borderColor: "#DDCA8770",
+    backgroundColor:"transparent"
   },
 
-  background: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    height: "100%",
-  },
+  
   
 })

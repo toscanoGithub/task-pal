@@ -48,6 +48,8 @@
 
     "h-1-text-color": "##4A8177",
     "gradient-from": "#31655B",
-    "gradient-to": "#4A8177"
+    "gradient-to": "#4A8177",
+    "secondary": "#EDB232",
+    "tertiary": "#DDCA87"
 
   }

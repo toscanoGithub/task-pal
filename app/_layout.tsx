@@ -21,7 +21,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState(true)
+  const [currentUser, setCurrentUser] = useState(false)
 
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
@@ -49,19 +49,25 @@ export default function RootLayout() {
                 <IconRegistry icons={EvaIconsPack}/>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack  screenOptions={{headerShown: false}}>
+            {/* parent screen */}
             <Stack.Screen name="(screens)/parent-screen" 
             options={{headerShown: true, title: "Parent", headerBackVisible: false,
               header: (props) => {
                 return <Header  username='Parent' />
               }
             }}/>
+
+            {/* child screen */}
             <Stack.Screen name="(screens)/child-screen" 
             options={{headerShown: true, title:"Child", headerBackVisible: false, 
               header: (props) => {
                 return <Header username='Child' />
               }
             }}/>
+
+            {/* not found screen */}
             <Stack.Screen name="+not-found" />
+            
           </Stack>
           <StatusBar style="auto" />
         </ThemeProvider>

@@ -11,6 +11,7 @@ import { Task } from '@/types/Entity';
 interface AddTaskFormProps {
     date?: DateData;
     dismiss: () => void;
+    iHaveFocus: () => void;
 }
 
 interface FormValues {
@@ -23,7 +24,7 @@ interface FormValues {
     childName: Yup.string().required("Child name is required"),
   });
 
-const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss}) => {
+const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus}) => {
     const user = {id: "1234567890", email: "parent@taskpal.com", name: "Parent Name"}
     const {tasks, addTaskToContext, editTaskInContext} = useTaskContext()
 
@@ -79,8 +80,9 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss}) => {
                         placeholder={`${currentDayTask ? currentDayTask.childName : 'Task description'}`}
                         value={ values.description}
                         onChangeText={handleChange('description')}
-                    onBlur={handleBlur('description')}
-                    status={touched.description && errors.description ? 'danger' : 'basic'}
+                      onBlur={handleBlur('description')}
+                      onFocus={iHaveFocus}
+                      status={touched.description && errors.description ? 'danger' : 'basic'}
                     />
                      {touched.description && errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
 
@@ -91,6 +93,7 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss}) => {
                         value={values.childName}
                         onChangeText={handleChange('childName')}
                         onBlur={handleBlur('childName')}
+                        onFocus={iHaveFocus}
                         status={touched.childName && errors.childName ? 'danger' : 'basic'}
                     />
                     {touched.childName && errors.childName && <Text style={styles.errorText}>{errors.childName}</Text>}
@@ -109,7 +112,7 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss}) => {
             
             }
             
-                    </Formik>
+          </Formik>
 
     </View>
   )
