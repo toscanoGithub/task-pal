@@ -7,6 +7,8 @@ import { Button, Input, Text } from '@ui-kitten/components';
 import theme from "../theme.json"
 import { useTaskContext } from '@/contexts/TaskContext';
 import { Task } from '@/types/Entity';
+import InputWithAutocomplete from './InputWithAutocomplete';
+import { useUserContext } from '@/contexts/UserContext';
 
 interface AddTaskFormProps {
     date?: DateData;
@@ -21,22 +23,24 @@ interface FormValues {
 
   const validationSchema = Yup.object().shape({
     description: Yup.string().required("Task description is required"),
-    childName: Yup.string().required("Child name is required"),
+    // childName: Yup.string().required("Child name is required"),
   });
 
 const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus}) => {
-    const user = {id: "1234567890", email: "parent@taskpal.com", name: "Parent Name"}
     const {tasks, addTaskToContext, editTaskInContext} = useTaskContext()
-
     const [currentDayTask, setCurrentDayTask] = useState<Task>()
+  const {user} = useUserContext();
 
     useEffect(() => {
       const tasksInCurrentDay = tasks.filter(task => task.id !== null && task.date.timestamp === date?.timestamp)
       setCurrentDayTask(tasksInCurrentDay[0])
-      
+
+      console.log(":::::::::::::::", tasksInCurrentDay[0]);
       
     }, [tasks])
     
+    
+   
     
 
   return (
@@ -54,19 +58,18 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus}) =>
             
             onSubmit={values => {
                 console.log(":::::::::::: submit form ::::::::::::::");
-                
+                values.childName = currentDayTask!.childName
                 // submit form to firestore
-                if (!currentDayTask) {
+                const task = {...values, parent: {...user}, date, isCompleted: false} as Task
+                if (!currentDayTask?.description) {
                     // Add new task
-                    const task = {...values, parent: {...user}, date, isCompleted: false} as Task
                     console.log(":::::::::: ", task);
                     addTaskToContext(task);
                 } else {
                     // Edit existing task
-                    const task = {...values, parent: {...user}, date, isCompleted: false} as Task
                     editTaskInContext(task)
                 }
-
+                setCurrentDayTask(task)
                 dismiss()
                 
             }}
@@ -74,10 +77,10 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus}) =>
     {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue, resetForm }) => 
             
             <View style={styles.inputsWrapper}>
-                    {/* FULL NAME */}
+                    {/* DESCRIPTION */}
                     <Input
                         style={styles.input}
-                        placeholder={`${currentDayTask ? currentDayTask.childName : 'Task description'}`}
+                        placeholder={`${currentDayTask ? currentDayTask.description : 'Task description'}`}
                         value={ values.description}
                         onChangeText={handleChange('description')}
                       onBlur={handleBlur('description')}
@@ -86,8 +89,13 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus}) =>
                     />
                      {touched.description && errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
 
+
+                    <InputWithAutocomplete getMemberNameValue={(name: string) => setCurrentDayTask(prev => {
+                      return {...prev, childName: name} as Task
+                    } )} placeholder={`${currentDayTask ? currentDayTask.childName : 'Family member name'}`} />
+
                     {/* CHILD NAME */}
-                    <Input
+                    {/* <Input
                         style={styles.input}
                         placeholder={`${currentDayTask ? currentDayTask.childName : 'Child name'}`}
                         value={values.childName}
@@ -96,7 +104,7 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus}) =>
                         onFocus={iHaveFocus}
                         status={touched.childName && errors.childName ? 'danger' : 'basic'}
                     />
-                    {touched.childName && errors.childName && <Text style={styles.errorText}>{errors.childName}</Text>}
+                    {touched.childName && errors.childName && <Text style={styles.errorText}>{errors.childName}</Text>} */}
 
                     <Button appearance='outline' onPress={() => {
                         handleSubmit()
@@ -104,7 +112,7 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus}) =>
                         
                     }} style={styles.submitBtn} status="primary">
                         {evaProps => <Text style={{...evaProps, color:"#EDB232", fontSize: 20}} >
-                            {currentDayTask ? "Edit task" : "Add new task"}    
+                            {currentDayTask?.description ? "Edit task" : "Add new task"}    
                         </Text>}
                     </Button>
 

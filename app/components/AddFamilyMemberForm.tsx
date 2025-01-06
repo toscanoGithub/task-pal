@@ -25,7 +25,7 @@ interface FormValues {
     passcode: Yup.string().required("Passcode is required"),
   });
 
-const AddFamilyMember: React.FC<AddFamilyMemberFormProps> = ({dismiss, iHaveFocus, addedBy}) => {
+const AddFamilyMemberForm: React.FC<AddFamilyMemberFormProps> = ({dismiss, iHaveFocus, addedBy}) => {
     const {tasks, addTaskToContext, editTaskInContext} = useTaskContext()
     const {updateUser, user} = useUserContext()
     const [currentDayTask, setCurrentDayTask] = useState<Task>()
@@ -57,11 +57,7 @@ const AddFamilyMember: React.FC<AddFamilyMemberFormProps> = ({dismiss, iHaveFocu
                 // update user with newMember data
                 
             updateUser({...newMember})
-            
-                
-          
-                
-              
+
                 dismiss()
                 
             }}
@@ -113,7 +109,7 @@ const AddFamilyMember: React.FC<AddFamilyMemberFormProps> = ({dismiss, iHaveFocu
   )
 }
 
-export default AddFamilyMember
+export default AddFamilyMemberForm
 
 const styles = StyleSheet.create({
   modalTitle: {

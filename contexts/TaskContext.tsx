@@ -37,8 +37,6 @@ const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 // Create a Provider component
 export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
-    // const {user} = useUserContext()
-    const user = {name: "Ait Assou", id: "123"}
     const [tasks, setTasks] = useState<Task[]>([]);
     const fetchedTasks: Task[] = []
 
@@ -51,10 +49,11 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
       querySnapshot.forEach((doc) => {
        const task: Task = {
         id: doc.id,
-        description: doc.data().task,
+        description: doc.data().description,
         date: doc.data().date,
         parent: doc.data().parent,
         childName: doc.data().childName,
+
     }
         fetchedTasks.push(task)
         

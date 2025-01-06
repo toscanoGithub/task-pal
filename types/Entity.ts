@@ -20,15 +20,15 @@ export interface Parent {
     id: string;
     name: string;
     email: string;
+    members?: Child[]
 }
 
 
 
 export interface Child {
-    id: string;
     name: string;
-    code: string;
-    email: string;
+    passcode: string;
+    email?: string;
 }
 // Define the Task type
 export interface Task {

@@ -1,5 +1,5 @@
 import { StyleSheet, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import theme from "../theme.json"
 import { Button, Icon, IconElement, Text } from '@ui-kitten/components'
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -14,6 +14,11 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({username}) => {
   const {user} = useUserContext()
 
+  useEffect(() => {
+   console.log(":::::::::::", user?.name);
+   
+  }, [user])
+  
   return (
     <View style={styles.container}>
       <View style={styles.row}>
@@ -30,7 +35,7 @@ export default Header
 
 const styles = StyleSheet.create({
     container: {
-        height: 100,
+        height: 80,
         backgroundColor: theme["gradient-from"],
         justifyContent:"center",
     },
@@ -40,7 +45,7 @@ const styles = StyleSheet.create({
         width: "100%",
         justifyContent: "space-between",
         alignItems: "center",
-        paddingTop: 40,
+        paddingTop: 30,
         paddingHorizontal: 10
     },
 
