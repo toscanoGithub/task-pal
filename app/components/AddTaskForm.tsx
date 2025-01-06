@@ -18,7 +18,7 @@ interface AddTaskFormProps {
 
 interface FormValues {
     description: string;
-    childName: string;
+    toFamilyMember: string;
   };
 
   const validationSchema = Yup.object().shape({
@@ -52,13 +52,13 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus}) =>
         <Formik 
             initialValues={{
               description: currentDayTask?.description ?? "",
-              childName: currentDayTask?.childName ?? ""
+              toFamilyMember: currentDayTask?.toFamilyMember ?? ""
             }}
             validationSchema={validationSchema}
             
             onSubmit={values => {
                 console.log(":::::::::::: submit form ::::::::::::::");
-                values.childName = currentDayTask!.childName
+                values.toFamilyMember = currentDayTask!.toFamilyMember
                 // submit form to firestore
                 const task = {...values, parent: {...user}, date, isCompleted: false} as Task
                 if (!currentDayTask?.description) {
@@ -91,8 +91,8 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus}) =>
 
 
                     <InputWithAutocomplete getMemberNameValue={(name: string) => setCurrentDayTask(prev => {
-                      return {...prev, childName: name} as Task
-                    } )} placeholder={`${currentDayTask ? currentDayTask.childName : 'Family member name'}`} />
+                      return {...prev, toFamilyMember: name} as Task
+                    } )} placeholder={`${currentDayTask ? currentDayTask.toFamilyMember : 'Family member name'}`} />
 
                     {/* CHILD NAME */}
                     {/* <Input

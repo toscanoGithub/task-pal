@@ -1,6 +1,8 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
-import { MaterialIcons } from '@expo/vector-icons';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import Entypo from '@expo/vector-icons/Entypo';
+
 import theme from "../theme.json"
 
 interface ActionButtonProps {
@@ -13,7 +15,8 @@ const ActionSheetAddButton: React.FC<ActionButtonProps> = ({ onPress, iconName, 
   return (
     <TouchableOpacity style={styles.button} onPress={() => onPress()}>
       <View style={styles.iconWrapper}>
-        <MaterialIcons name={iconName as any} size={30} color="white" />
+        {/* <MaterialIcons name={iconName as string | any} size={30} color="white" /> */}
+        <AntDesign name="adduser" size={24} color={theme["secondary"]} />
       </View>
     </TouchableOpacity>
   )

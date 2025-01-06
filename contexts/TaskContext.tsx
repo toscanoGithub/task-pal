@@ -21,7 +21,7 @@ interface Task {
     description: string;
     date: DateData;
     parent: Parent;
-    childName: string;
+    toFamilyMember: string;
 }
 
 // Define the TaskContext type
@@ -52,7 +52,7 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
         description: doc.data().description,
         date: doc.data().date,
         parent: doc.data().parent,
-        childName: doc.data().childName,
+        toFamilyMember: doc.data().toFamilyMember,
 
     }
         fetchedTasks.push(task)

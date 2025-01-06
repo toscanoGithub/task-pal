@@ -46,7 +46,7 @@ const SigninForm: React.FC<signupProp> = ({ dismissModal, iHaveFocus }) => {
   /*query the email
       if success >> check if isChild.
       if not a child >> normal signInWithEmailAndPassword
-      if child >> check the name if it matches doc.data().childName
+      if child >> check the name if it matches doc.data().toFamilyMember
       match means grant access and pusch screen to child-screen */
 
       const {email, password, name} = values;
@@ -63,7 +63,7 @@ const SigninForm: React.FC<signupProp> = ({ dismissModal, iHaveFocus }) => {
         });
         const foundUser = foundUsers.pop() as User;
         setUser(foundUser)
-        if(!foundUser.isChild) { // parent
+        if(!foundUser.isFamilyMember) { // parent
           
           signInWithEmailAndPassword(auth, email, password) // signin parent
           .then(userCredentials => {
@@ -72,7 +72,7 @@ const SigninForm: React.FC<signupProp> = ({ dismissModal, iHaveFocus }) => {
             router.push("/(screens)/parent-screen")
           })
         } else {
-          // pick the name from childName just grant access to the child
+          // pick the name from familyMember just grant access to the child
           console.log(":::::::::: ", foundUser);
           
           dismissModal();
@@ -103,7 +103,7 @@ const SigninForm: React.FC<signupProp> = ({ dismissModal, iHaveFocus }) => {
       onValueChange={toggleSwitch}
       value={isEnabled}
     /> 
-    <Text style={{fontSize: 20, color: `${isEnabled ? theme["secondary"] : theme["gradient-to"]}`}}>I'm a child</Text>
+    <Text style={{fontSize: 20, color: `${isEnabled ? theme["secondary"] : theme["gradient-to"]}`}}>I'm a family member</Text>
   </View>
     <Formik 
         initialValues={{

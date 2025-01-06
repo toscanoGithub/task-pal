@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import { Button, Input, Text } from '@ui-kitten/components';
 import theme from "../theme.json"
 import { useTaskContext } from '@/contexts/TaskContext';
-import { Child, Parent, Task, User } from '@/types/Entity';
+import { FamilyMember, Parent, Task, User } from '@/types/Entity';
 import { useUserContext } from '@/contexts/UserContext';
 
 interface AddFamilyMemberFormProps {

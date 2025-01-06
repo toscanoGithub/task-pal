@@ -58,15 +58,15 @@ const SignupForm: React.FC<signupProp> = ({ dismissModal, iHaveFocus }) => {
     }
 }
 
-const addMoreDataToUser = async (email: string, name: string, isChild: boolean) => {
+const addMoreDataToUser = async (email: string, name: string, isFamilyMember: boolean) => {
 try {
 const docRef = await addDoc(collection(db, "users"), {
   email,
   name, 
-  isChild: false 
+  isFamilyMember: false 
 });
 
-setUser({id: docRef.id, email: email, name: name, isChild: false})  
+setUser({id: docRef.id, email: email, name: name, isFamilyMember: false})  
 dismissModal()
 router.push("/(screens)/parent-screen")    
 } catch (e) {
@@ -82,7 +82,7 @@ console.error("Error adding document: ", e);
           password: '',
           confirmPassword: '',
           name: '',
-          isChild: false,
+          isFamilyMember: false,
         }}
         validationSchema={validationSchema}
         onSubmit={values => register(values)}
