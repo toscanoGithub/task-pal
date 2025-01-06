@@ -1,6 +1,6 @@
 import db from '@/firebase/firebase-config';
 import { Child } from '@/types/Entity';
-import { collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
+import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 import { Alert } from 'react-native';
 
@@ -9,16 +9,14 @@ type AuthUser = {
     email: string;
     name: string;
     isChild: boolean;
-    members?: Child[]
-    
+    members?: Child[];
 };
 
 type UserContextType = {
     email: string | undefined;
     user: AuthUser | null;
     setUser: React.Dispatch<React.SetStateAction<AuthUser | null>>;
-    updateUser: React.Dispatch<{name: string, passcode: string}>;
-
+    updateUser: React.Dispatch<{ name: string; passcode: string }>;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -34,42 +32,45 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
         email: user?.email,
         user,
         setUser,
-        updateUser: async function  (value: {name: string, passcode: string}): Promise<void> {
+        updateUser: async function (value: { name: string; passcode: string }): Promise<void> {
             // Query the doc to edit
-            const q = query(collection(db, "users"), where("email", "==", user!.email));
-            const querySnapshot = await getDocs(q);
-            if(querySnapshot.empty) {
-            console.log("no Task registered yet")
-            } else {
-            querySnapshot.forEach(async (currentDoc) => {
-            const docRef = doc(db, 'users', currentDoc.id); // 'users' collection, 'user123' document ID
+            const userId = user!.id;
+            const docRef = doc(db, 'users', user?.id ?? 'userid');
+
+            // Object you want to push to the 'members' array
+            const newMember: Child = {
+                ...value,
+                email: user?.email
+            };
 
             // Update the document
-            try {
-                await updateDoc(docRef, {
-                    members: [...currentDoc.data().members, {...value}]
-                });
-
-                console.log('Document successfully updated!');
-                
-            } catch (error) {
-                console.error('Error updating document: ', error);
-            }
-            
-                
+            await updateDoc(docRef, {
+                members: arrayUnion(newMember)
             });
-            
-            }
 
+            // If `user?.members` exists, spread the existing members and add the new member, otherwise just set the new member
+            setUser(prevUser => {
+                if (!prevUser) {
+                    // If prevUser is null, return the new state with only the new member
+                    return {
+                        email: user?.email ?? '',
+                        name: '',
+                        isChild: false,
+                        members: [newMember]  // Set the new member in the array
+                    };
+                }
+            
+                // If prevUser is defined, append the new member to the existing members array
+                return {
+                    ...prevUser,
+                    members: prevUser.members ? [...prevUser.members, newMember] : [newMember]
+                };
+            });
             
         }
     };
 
-    return (
-        <UserContext.Provider value={value}>
-            {children}
-        </UserContext.Provider>
-    );
+    return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
 
 // Custom hook to use the UserContext

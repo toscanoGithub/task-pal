@@ -62,13 +62,12 @@ const SigninForm: React.FC<signupProp> = ({ dismissModal, iHaveFocus }) => {
           foundUsers.push({id: doc.id, ...doc.data()} as User)         
         });
         const foundUser = foundUsers.pop() as User;
-        
-        
+        setUser(foundUser)
         if(!foundUser.isChild) { // parent
-          setUser(foundUser) // user is parent so pick the name
+          
           signInWithEmailAndPassword(auth, email, password) // signin parent
           .then(userCredentials => {
-            // console.log(":::::::::: ", foundUser);
+            console.log(":::::::::: ", userCredentials.user);
             dismissModal();
             router.push("/(screens)/parent-screen")
           })
@@ -77,7 +76,7 @@ const SigninForm: React.FC<signupProp> = ({ dismissModal, iHaveFocus }) => {
           console.log(":::::::::: ", foundUser);
           
           dismissModal();
-          router.push("/(screens)/parent-screen")
+          router.push("/(screens)/child-screen")
         }
         
 
