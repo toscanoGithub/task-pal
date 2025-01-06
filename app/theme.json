@@ -50,6 +50,7 @@
     "gradient-from": "#31655B",
     "gradient-to": "#4A8177",
     "secondary": "#EDB232",
-    "tertiary": "#DDCA87"
+    "tertiary": "#DDCA87",
+    "task-non-completed": "#4A8177"
 
   }

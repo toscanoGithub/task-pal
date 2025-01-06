@@ -24,7 +24,7 @@ const Header: React.FC<HeaderProps> = ({username}) => {
       <View style={styles.row}>
         <Text style={styles.username} category='h6'>{user?.name }</Text>
         <TouchableOpacity>
-        <Ionicons name="exit-outline" size={34} color="#EDB232" />
+        <Ionicons name="exit-outline" size={34} color={theme["secondary"]} />
         </TouchableOpacity>
       </View>
     </View>
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
       },
 
       username: {
-        color:"#EDB232",
+        color: theme["secondary"],
         fontWeight: 900,
         letterSpacing: 1
       }

@@ -55,11 +55,9 @@ const ParentScreen = () => {
     const tasksDates = tasks.map(task => task.date)
     // '2025-01-05': {selected: true, marked: false, selectedColor: 'orange'},
     tasksDates.forEach(td => setDaysWithTasks(prev => {
-      return {...prev, [td.dateString]: {selected: true, marked: false, selectedColor: 'orange'}}
+      return {...prev, [td.dateString]: 
+        {selected: true, marked: true, selectedTextColor: "#14282F", dotColor:"#ff0000", selectedColor: "#4A817730", customStyles: {container: {borderColor: "red", borderWidth: 4, borderStyle:"solid"}}  }}
     }))
-
-    
-    
   }, [tasks])
   
 
@@ -104,7 +102,7 @@ const ParentScreen = () => {
       
       <View style={styles.calendarContainer}>
       <Calendar
-      theme={{calendarBackground: "#617BB310",}}
+      theme={{calendarBackground: "#617BB310", }}
           // Set the currently visible month
           date={'2025-01-01'} // Use 'date' instead of 'current'
           // Minimum and Maximum dates that can be selected
