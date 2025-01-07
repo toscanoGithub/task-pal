@@ -6,6 +6,15 @@ export interface User {
     name: string;
     email: string;
     isFamilyMember: boolean;
+    members?: FamilyMember[]
+}
+
+export interface AuthUser {
+    id: string;
+    name: string;
+    email: string;
+    isFamilyMember: boolean;
+    members?: FamilyMember[]
 }
 
 export interface FamilyMember {
