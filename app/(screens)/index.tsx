@@ -9,6 +9,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons'; // Alternative icon
 import { LinearGradient } from 'expo-linear-gradient'
 import Gradient from '../components/Gradient'
 import { BlurView } from 'expo-blur'
+import { StatusBar } from 'expo-status-bar'
 
 const closeIcon = (props: any): IconElement => (
     <Icon
@@ -61,6 +62,7 @@ const auth = () => {
 
      
     <View style={styles.container}>
+      <StatusBar hidden={true} />
       <Gradient />
       <View style={styles.buttonsRow}>
         {/* SIGN IN BUTTON */}

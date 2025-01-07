@@ -14,7 +14,7 @@ import { collection, addDoc, query, where, getDocs, doc } from "firebase/firesto
 import db from '../../firebase/firebase-config';
 import { router } from 'expo-router';
 import { useUserContext } from '@/contexts/UserContext';
-import { User } from '@/types/Entity';
+import { AuthUser, User } from '@/types/Entity';
 import { useRouter } from 'expo-router';
 
 
@@ -38,15 +38,16 @@ const validationSchema = Yup.object().shape({
 const SigninForm: React.FC<signupProp> = ({ dismissModal, iHaveFocus }) => {
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
-  const {setUser} = useUserContext()
+  const {setUser, user} = useUserContext()
   const auth = getAuth();
   const router = useRouter();
+
   // REGISTER LOGIC
   const signin = async (values: FormValues) => {
   /*query the email
-      if success >> check if isChild.
-      if not a child >> normal signInWithEmailAndPassword
-      if child >> check the name if it matches doc.data().toFamilyMember
+      if success >> check if isFamilyMember.
+      if not  >> normal signInWithEmailAndPassword
+      else >> check the name if it matches doc.data().toFamilyMember
       match means grant access and pusch screen to child-screen */
 
       const {email, password, name} = values;
@@ -63,17 +64,27 @@ const SigninForm: React.FC<signupProp> = ({ dismissModal, iHaveFocus }) => {
         });
         const foundUser = foundUsers.pop() as User;
         setUser(foundUser)
-        if(!foundUser.isFamilyMember) { // parent
+        if(!isEnabled) { // Host
           
           signInWithEmailAndPassword(auth, email, password) // signin parent
           .then(userCredentials => {
-            console.log(":::::::::: ", userCredentials.user);
             dismissModal();
             router.push("/(screens)/parent-screen")
           })
         } else {
           // pick the name from familyMember just grant access to the child
-          console.log(":::::::::: ", foundUser);
+          
+          if(foundUser.members) {
+            const member = foundUser.members.filter(m => m.name === name)
+            console.log(":::::::::::", member);
+            setUser((prev) => {
+              if (prev && member.length > 0) {
+                return { ...prev, name: member[0].name };
+              }
+              return prev; // Or return null, depending on your logic
+            });
+            
+          }
           
           dismissModal();
           router.push("/(screens)/child-screen")
