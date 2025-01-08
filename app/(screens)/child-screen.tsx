@@ -16,7 +16,7 @@ const ChildScreen = () => {
   const [daysWithTasks, setDaysWithTasks] = useState<MarkedDates>()
   const [expandedModal, setExpandedModal] = useState(false)
   const [modalType, setModalType] = useState<string>()
-  const [tasksForSelectedDay, settasksForSelectedDay] = useState<Task>()
+  const [tasksForSelectedDay, settasksForSelectedDay] = useState<Task[]>([])
 
   const [showTask, setShowTask] = useState(false)
   useEffect(() => {
@@ -37,7 +37,7 @@ const ChildScreen = () => {
       
       if(!currentDayWithTask.length) return // handle day press on day with no task
       
-      settasksForSelectedDay(currentDayWithTask[0])
+      settasksForSelectedDay(currentDayWithTask)
       setSelectedDate(date)
       setShowTask(!showTask)
     };
@@ -85,7 +85,7 @@ const ChildScreen = () => {
       </View>
 
 
-      <TaskView isVisible={showTask} />
+      <TaskView tasksCurrentdDay={tasksForSelectedDay} isVisible={showTask} />
     </SafeAreaView>
   )
 }
