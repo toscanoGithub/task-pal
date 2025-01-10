@@ -9,6 +9,7 @@ import 'react-native-reanimated';
 import {EvaIconsPack} from '@ui-kitten/eva-icons';
 import * as eva from '@eva-design/eva';
 import { ApplicationProvider, IconRegistry, Layout, Text } from '@ui-kitten/components';
+import { PaperProvider } from 'react-native-paper';
 
 
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -46,6 +47,7 @@ export default function RootLayout() {
 
   return (
     <CombinedContextProvider>
+      <PaperProvider>
         <ApplicationProvider {...eva} theme={eva.light}>
                 <IconRegistry icons={EvaIconsPack}/>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -73,6 +75,7 @@ export default function RootLayout() {
           <StatusBar style="auto" />
         </ThemeProvider>
         </ApplicationProvider>
+        </PaperProvider>
     </CombinedContextProvider>
 
   );
