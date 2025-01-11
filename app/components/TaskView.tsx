@@ -1,9 +1,11 @@
 import { Task } from '@/types/Entity';
 import { Text } from '@ui-kitten/components';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
 import Animated, { Easing, withSpring, useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import theme from "../theme.json"
+import ConfettiCannon from 'react-native-confetti-cannon';
+import LottieView from 'lottie-react-native';
 
 const { height } = Dimensions.get('window');
 
@@ -11,7 +13,18 @@ interface TaskViewProps {
     isVisible: boolean;
     tasksCurrentdDay: Task[]
 }
+
+// Define a type for the button center
+type ButtonCenter = {
+  x: number;
+  y: number;
+};
+
+
 const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay}) => {
+  const [triggerConfetti, setTriggerConfetti] = useState(false);
+  const [buttonCenter, setButtonCenter] = useState<ButtonCenter | null>(null); // Button center can be null initially
+  const confettiRef = useRef(null);
 
     useEffect(() => {
       console.log(tasksCurrentdDay);
@@ -47,6 +60,32 @@ const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay}) => {
     };
   });
 
+
+  const handlePressDoneBtn = () => {
+    console.log("handle press");
+    
+    setTriggerConfetti(true)
+    // setTimeout(() => {
+    //   setTriggerConfetti(false);
+    // }, 10000); // Stop the confetti after 3 seconds
+  }
+
+  
+
+  const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
+  const [buttonSize, setButtonSize] = useState({ width: 0, height: 0 });
+
+  // // Calculate the origin of the confetti to be at the center of the button
+  // const originX = buttonPosition.x + buttonSize.width / 2;
+  // const originY = buttonPosition.y + buttonSize.height / 2;
+  
+  const handleLayout = (event: any) => {
+    const { x, y, width, height } = event.nativeEvent.layout;
+    // Calculate the center of the button
+    console.log('Button layout:', { x, y, width, height });
+    setButtonCenter({ x: x + width / 2, y: y + height / 2 });
+  };
+
   return (
     <View style={styles.container}>
       
@@ -61,10 +100,26 @@ const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay}) => {
             
             </View>
             <Text style={styles.description}>{task.description}</Text>
-            <TouchableOpacity style={styles.doneBtn}><Text style={{textAlign:"center"}}>Done</Text></TouchableOpacity>
+            {!triggerConfetti && <TouchableOpacity onLayout={handleLayout}  onPress={handlePressDoneBtn} style={[styles.doneBtn,]}>
+              <Text style={{textAlign:"center"}}>Done</Text>
+              
+            </TouchableOpacity>}
+            {/* Display the confetti animation */}
+            {triggerConfetti && (
+                <LottieView
+                  
+                  source={require('../../assets/animations/done.json')} // Path to your confetti animation JSON
+                  autoPlay
+                  loop={false}
+                  style={[styles.confetti, {zIndex: 1000, top: buttonCenter!.y - 30, left: buttonCenter!.x / 2 + 5 }]}
+                />
+              )}
+      
           </View>)}
         </View>
       </Animated.View>
+
+      
     </View>
   );
 };
@@ -102,6 +157,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     alignItems: 'center',
+    position:"relative"
   },
   text: {
     fontSize: 18,
@@ -110,6 +166,8 @@ const styles = StyleSheet.create({
 
 //  Task card
   taskCard: {
+    position:"relative",
+    minHeight: 85,
     width:"90%",
     backgroundColor: theme.tertiary,
     paddingTop: 10,
@@ -130,6 +188,8 @@ const styles = StyleSheet.create({
   },
 
   doneBtn: {
+    position:"absolute",
+    zIndex: 100,
     marginLeft: "auto",
     borderRadius: 30,
     backgroundColor: theme.secondary,
@@ -138,7 +198,14 @@ const styles = StyleSheet.create({
     right: -10,
     width: 80,
     boxShadow: "rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px"
-  }
+  },
+
+  confetti: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    
+  },
 });
 
 export default TaskView;

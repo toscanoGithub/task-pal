@@ -46,6 +46,10 @@ const [value, setValue] = React.useState('');
 const [isPopoverContentVisible, setIsPopoverContentVisible] = useState(false)
 
     const memberSelected = (member: FamilyMember) => {
+      if(member.name === selectedFamilyMember) {
+        setIsPopoverContentVisible(false)
+        return;
+      }
         setDaysWithTasks({})
         setIsPopoverContentVisible(false)
 
@@ -212,8 +216,8 @@ const [isPopoverContentVisible, setIsPopoverContentVisible] = useState(false)
                 <AddFamilyMemberForm iHaveFocus={handleFormHasFocus} dismiss={() => setModalIsVisible(!modalIsVisible)} addedBy={user!.name} />
 
               : 
-              <AddTaskForm iHaveFocus={handleFormHasFocus}  date={selectedDate} dismiss={() => setModalIsVisible(!modalIsVisible)} />
-            }
+              selectedFamilyMember && <AddTaskForm toFamilyMember={selectedFamilyMember} iHaveFocus={handleFormHasFocus}  date={selectedDate} dismiss={() => setModalIsVisible(!modalIsVisible)} />
+}
             </Animated.View>
           </View>
     </Modal>
