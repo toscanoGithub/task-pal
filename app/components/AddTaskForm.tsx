@@ -14,20 +14,19 @@ interface AddTaskFormProps {
     date?: DateData;
     dismiss: () => void;
     iHaveFocus: () => void;
+    toFamilyMember: string;
 }
 
 interface FormValues {
     description: string;
-    toFamilyMember: string;
   };
 
   const validationSchema = Yup.object().shape({
     description: Yup.string().required("Task description is required"),
-    // childName: Yup.string().required("Child name is required"),
   });
 
-const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus}) => {
-    const {tasks, addTaskToContext, editTaskInContext} = useTaskContext()
+const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus, toFamilyMember}) => {
+    const {tasks, addTaskToContext} = useTaskContext()
     const [currentDayTask, setCurrentDayTask] = useState<Task>()
   const {user} = useUserContext();
 
@@ -46,29 +45,22 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus}) =>
   return (
     <View>
       {/* MODAL TITLE */}
-      <Text category='h4' style={styles.modalTitle}>{currentDayTask ? "Edit Task" : "Add Task"}</Text>
+      <Text category='h4' style={styles.modalTitle}>Add tasks</Text>
       <Text style={styles.selectedDate}>{date?.dateString}</Text>
         {/* Form */}
         <Formik 
             initialValues={{
               description: currentDayTask?.description ?? "",
-              toFamilyMember: currentDayTask?.toFamilyMember ?? ""
             }}
             validationSchema={validationSchema}
             
             onSubmit={values => {
                 console.log(":::::::::::: submit form ::::::::::::::");
-                values.toFamilyMember = currentDayTask!.toFamilyMember
                 // submit form to firestore
-                const task = {...values, parent: {...user}, date, isCompleted: false} as Task
-                if (!currentDayTask?.description) {
-                    // Add new task
-                    console.log(":::::::::: ", task);
-                    addTaskToContext(task);
-                } else {
-                    // Edit existing task
-                    editTaskInContext(task)
-                }
+                // const task = {...values, parent: {...user}, date, isCompleted: false} as Task
+
+                const task = { ...values, parent: { ...user }, date, isCompleted: false, toFamilyMember } as unknown as Task
+                addTaskToContext(task);
                 setCurrentDayTask(task)
                 dismiss()
                 
@@ -90,29 +82,14 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus}) =>
                      {touched.description && errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
 
 
-                    <InputWithAutocomplete getMemberNameValue={(name: string) => setCurrentDayTask(prev => {
-                      return {...prev, toFamilyMember: name} as Task
-                    } )} placeholder={`${currentDayTask ? currentDayTask.toFamilyMember : 'Family member name'}`} />
-
-                    {/* CHILD NAME */}
-                    {/* <Input
-                        style={styles.input}
-                        placeholder={`${currentDayTask ? currentDayTask.childName : 'Child name'}`}
-                        value={values.childName}
-                        onChangeText={handleChange('childName')}
-                        onBlur={handleBlur('childName')}
-                        onFocus={iHaveFocus}
-                        status={touched.childName && errors.childName ? 'danger' : 'basic'}
-                    />
-                    {touched.childName && errors.childName && <Text style={styles.errorText}>{errors.childName}</Text>} */}
-
+                    
                     <Button appearance='outline' onPress={() => {
                         handleSubmit()
                         // resetForm()
                         
                     }} style={styles.submitBtn} status="primary">
                         {evaProps => <Text style={{...evaProps, color:"#EDB232", fontSize: 20}} >
-                            {currentDayTask?.description ? "Edit task" : "Add new task"}    
+                            Done    
                         </Text>}
                     </Button>
 
