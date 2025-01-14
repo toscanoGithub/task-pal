@@ -6,12 +6,20 @@ import Animated, { Easing, withSpring, useSharedValue, withTiming, useAnimatedSt
 import theme from "../theme.json"
 import ConfettiCannon from 'react-native-confetti-cannon';
 import LottieView from 'lottie-react-native';
+import { date } from 'yup';
+import { DateData } from 'react-native-calendars';
+import { useUserContext } from '@/contexts/UserContext';
+import { collection, doc, getDocs, query, where } from 'firebase/firestore';
+import db from '@/firebase/firebase-config';
+import { useTaskContext } from '@/contexts/TaskContext';
 
 const { height } = Dimensions.get('window');
 
 interface TaskViewProps {
     isVisible: boolean;
-    tasksCurrentdDay: Task[]
+    tasksCurrentdDay: { description: string, id: string,}[],
+    date?: DateData,
+    allDone: () => void;
 }
 
 // Define a type for the button center
@@ -21,16 +29,14 @@ type ButtonCenter = {
 };
 
 
-const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay}) => {
-  const [triggerConfetti, setTriggerConfetti] = useState(false);
+
+
+const TaskView: React.FC<TaskViewProps> = ({ isVisible, tasksCurrentdDay, date, allDone }) => {
+  const [confettiStates, setConfettiStates] = useState<{ [key: string]: boolean }>({}); // Track confetti per task
   const [buttonCenter, setButtonCenter] = useState<ButtonCenter | null>(null); // Button center can be null initially
   const confettiRef = useRef(null);
-
-    useEffect(() => {
-      console.log(tasksCurrentdDay);
-      
-    }, [])
-    
+  const {user} = useUserContext();
+  const {updateTask} = useTaskContext()
 
   // Shared value to track the slide position
   const slidePosition = useSharedValue(-height);
@@ -45,13 +51,12 @@ const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay}) => {
   };
 
   useEffect(() => {
-    if(isVisible) {
-        slideIn()
+    if (isVisible) {
+      slideIn()
     } else {
-        slideOut()
+      slideOut()
     }
-  }, [isVisible])
-  
+  }, [isVisible]);
 
   // Style based on the slide position
   const animatedStyle = useAnimatedStyle(() => {
@@ -60,66 +65,74 @@ const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay}) => {
     };
   });
 
+  // Handle Done button press and trigger confetti for the specific task
+  const handlePressDoneBtn = async (taskId: string) => {
+    setConfettiStates(prev => ({ ...prev, [taskId]: true }));
+    // update state >>> task status from "Pending" to "Completed"
+    /*
+      query tasks where date match date, where toFamilyMember match user.name and where tasks match tasksCurrentdDay
+      Update task with id that match taskId
+    */
+      
+      const q = query(collection(db, "tasks"), where("date", "==", date), where("toFamilyMember", "==", user!.name));
+            const querySnapshot = await getDocs(q);
+            if(querySnapshot.empty) {
+            console.log("no Task registered yet in handlePressDoneBtn")
+            } else {
+              
+              querySnapshot.forEach(async (currentDoc) => {
+                  updateTask(currentDoc.data() as Task, taskId );
+                  console.log("currentDoc.data() --------- ", currentDoc.data());
+                  
+                  
 
-  const handlePressDoneBtn = () => {
-    console.log("handle press");
-    
-    setTriggerConfetti(true)
-    // setTimeout(() => {
-    //   setTriggerConfetti(false);
-    // }, 10000); // Stop the confetti after 3 seconds
-  }
+                  
+                });
+              
+            }
+  };
 
-  
-
-  const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
-  const [buttonSize, setButtonSize] = useState({ width: 0, height: 0 });
-
-  // // Calculate the origin of the confetti to be at the center of the button
-  // const originX = buttonPosition.x + buttonSize.width / 2;
-  // const originY = buttonPosition.y + buttonSize.height / 2;
-  
   const handleLayout = (event: any) => {
     const { x, y, width, height } = event.nativeEvent.layout;
-    // Calculate the center of the button
-    console.log('Button layout:', { x, y, width, height });
     setButtonCenter({ x: x + width / 2, y: y + height / 2 });
   };
 
+
+  
+ 
+
   return (
     <View style={styles.container}>
-      
 
       {/* Sliding view */}
       <Animated.View style={[styles.slidingView, animatedStyle]}>
-        <Text category='h1' style={{color:theme['gradient-to'], marginTop: 120, fontSize: 18, lineHeight: 27, textTransform:"uppercase", paddingLeft: 10, marginBottom: 20, textAlign: "center"}}>Your tasks for today</Text>
+      <Text category='h1' style={{ color: theme['gradient-to'], marginTop: 120, fontSize: 18, lineHeight: 27, textTransform: "uppercase", paddingLeft: 10, textAlign: "center" }}>Your tasks for</Text>
+        <Text  style={{ color: theme['gradient-to'], fontSize: 12, lineHeight: 18,  paddingLeft: 10, marginBottom: 20, textAlign: "center" }}>{date?.dateString}</Text>
         <View style={styles.content}>
-          {tasksCurrentdDay.map(task => <View style={styles.taskCard} key={task.date.dateString}>
-            <View style={{flexDirection:"row", width:"100%", alignItems: "flex-start", justifyContent: "space-between", paddingHorizontal: 10,}}>
-            <Text style={styles.category} category='h6'>Task category</Text>
-            
-            </View>
-            <Text style={styles.description}>{task.description}</Text>
-            {!triggerConfetti && <TouchableOpacity onLayout={handleLayout}  onPress={handlePressDoneBtn} style={[styles.doneBtn,]}>
-              <Text style={{textAlign:"center"}}>Done</Text>
-              
-            </TouchableOpacity>}
-            {/* Display the confetti animation */}
-            {triggerConfetti && (
+          {tasksCurrentdDay.map(task => (
+            <View style={styles.taskCard} key={task.id}>
+              <Text style={styles.description}>{task.description}</Text>
+
+              {/* Only render the "Done" button if confetti hasn't been triggered */}
+              {!confettiStates[task.id] && (
+                <TouchableOpacity onLayout={handleLayout} onPress={() => handlePressDoneBtn(task.id)} style={[styles.doneBtn]}>
+                  <Text style={{ textAlign: "center" }}>Done</Text>
+                </TouchableOpacity>
+              )}
+
+              {/* Display the confetti animation for this task */}
+              {confettiStates[task.id] && buttonCenter && (
                 <LottieView
-                  
                   source={require('../../assets/animations/done.json')} // Path to your confetti animation JSON
                   autoPlay
                   loop={false}
-                  style={[styles.confetti, {zIndex: 1000, top: buttonCenter!.y - 30, left: buttonCenter!.x / 2 + 5 }]}
+                  style={[styles.confetti, { zIndex: 1000, top: buttonCenter.y - 30, left: buttonCenter.x / 2 + 5 }]}
                 />
               )}
-      
-          </View>)}
+            </View>
+          ))}
         </View>
       </Animated.View>
-
-      
     </View>
   );
 };
@@ -129,16 +142,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  button: {
-    backgroundColor: '#007bff',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
   },
   slidingView: {
     position: 'absolute',
@@ -157,19 +160,14 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     alignItems: 'center',
-    position:"relative"
+    position: "relative"
   },
-  text: {
-    fontSize: 18,
-    color: '#333',
-  },
-
-//  Task card
   taskCard: {
-    position:"relative",
+    marginVertical: 10,
+    position: "relative",
     minHeight: 85,
-    width:"90%",
-    backgroundColor: theme.tertiary,
+    width: "90%",
+    backgroundColor: theme['gradient-to'],
     paddingTop: 10,
     borderTopRightRadius: 30,
     borderTopStartRadius: 20,
@@ -181,14 +179,14 @@ const styles = StyleSheet.create({
     fontWeight: 700
   },
   description: {
-    marginTop: 3,
-    fontSize: 14,
-    fontWeight: 100,
+    // marginTop: 3,
+    fontSize: 16,
+    fontWeight: 700,
     paddingHorizontal: 10,
+    color: theme.secondary
   },
-
   doneBtn: {
-    position:"absolute",
+    position: "absolute",
     zIndex: 100,
     marginLeft: "auto",
     borderRadius: 30,
@@ -199,12 +197,10 @@ const styles = StyleSheet.create({
     width: 80,
     boxShadow: "rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px"
   },
-
   confetti: {
     position: 'absolute',
     width: '100%',
     height: '100%',
-    
   },
 });
 

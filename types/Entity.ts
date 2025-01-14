@@ -36,6 +36,7 @@ export interface Parent {
 
 // Define the Task type
 export interface Task {
+    [x: string]: TaskItem[];
     id?: string;
     date: DateData;
     parent: Parent;
