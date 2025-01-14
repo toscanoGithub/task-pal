@@ -1,9 +1,11 @@
+import uuid from 'react-native-uuid';
 import db from '@/firebase/firebase-config';
-import { addDoc, collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
+import { addDoc, arrayUnion, collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { DateData } from 'react-native-calendars';
 import { useUserContext } from './UserContext';
+import { date } from 'yup';
 
 interface Parent {
     id: string;
@@ -22,13 +24,14 @@ interface Task {
     date: DateData;
     parent: Parent;
     toFamilyMember: string;
+    tasks?: string[];
 }
 
 // Define the TaskContext type
 interface TaskContextType {
     tasks: Task[];
     addTaskToContext: (task: Task) => void;
-    editTaskInContext: (task: Task) => void;
+    updateTask: (task: Task, taskId: string) => void;
     getTaskById: (id: string) => Task | undefined;
 }
 
@@ -53,6 +56,7 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
         date: doc.data().date,
         parent: doc.data().parent,
         toFamilyMember: doc.data().toFamilyMember,
+        tasks: doc.data().tasks
 
     }
         fetchedTasks.push(task)
@@ -70,52 +74,105 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
 
 
        
-    const addTaskToContext = async (task: Task) => {
+       const addTaskToContext = async (task: Task) => {
         try {
-            const docRef = await addDoc(collection(db, "tasks"), {...task});
-            fetchTasks()
-            
-          } catch (e) {
-            console.error("Error adding document: ", e);
-          }
-        
+            // Create a query to check if a task with the same date already exists
+            const q = query(collection(db, "tasks"), where("date", "==", task.date), where("toFamilyMember", "==", task.toFamilyMember));
+            const querySnapshot = await getDocs(q);
+    
+            if (querySnapshot.empty) {
+                // If no task document exists for that date, create a new document
+                console.log("No Task registered yet. Creating a new document.");
+    
+                const docRef = await addDoc(collection(db, "tasks"), { 
+                    parent: task.parent,
+                    toFamilyMember: task.toFamilyMember,
+                    date: task.date,  // Store the date
+                    tasks: [{description: task.description, id: uuid.v4(), status: "Pending"}] // Initialize tasks array with the task description
+                });
+                console.log("Document created with ID:", docRef.id);
+    
+                // Optionally, fetch tasks (if you need to reflect the changes immediately)
+                fetchTasks();
+            } else {
+                // If a task document already exists, update it by adding the new task description
+                console.log("Task registered for this date. Adding task to the existing document.");
+    
+                for (const currentDoc of querySnapshot.docs) {
+                    const tasksDocRef = doc(db, "tasks", currentDoc.id);
+    
+                    // Fetch the document to check if it has a 'tasks' array
+                    const docSnapshot = await getDoc(tasksDocRef);
+    
+                    if (docSnapshot.exists()) {
+                        const docData = docSnapshot.data();
+    
+                        // Check if the 'tasks' array exists
+                        if (docData && Array.isArray(docData.tasks)) {
+                            // If 'tasks' array exists, update it by adding the new task description
+                            await updateDoc(tasksDocRef, {
+                                tasks: arrayUnion({description: task.description, id: uuid.v4(), status: "Pending"}) // Add the task description to the array without duplicating
+                            });
+                            console.log("Task description added to existing tasks array.");
+                        } else {
+                            // If 'tasks' array doesn't exist, create it and add the task description
+                            await updateDoc(tasksDocRef, {
+                                tasks: [{description: task.description, id: uuid.v4(), status: "Pending"}] // Create the tasks array with the first task description
+                            });
+                            console.log("Tasks array was created and the task description was added.");
+                        }
+                    } else {
+                        console.error("Document does not exist:", currentDoc.id);
+                    }
+                }
+    
+                // Optionally, fetch tasks (if you need to reflect the changes immediately)
+                fetchTasks();
+            }
+    
+        } catch (e) {
+            console.error("Error adding task: ", e);
+        }
     };
 
-    const editTaskInContext = async (task: any) => {
-        // Query the doc to edit
+    const updateTask = async (task: any, taskId: string) => {
+        try {
+            // Query the task document that holds the tasks array based on the date
             const q = query(collection(db, "tasks"), where("date", "==", task.date));
             const querySnapshot = await getDocs(q);
-            if(querySnapshot.empty) {
-            console.log("no Task registered yet")
+    
+            if (querySnapshot.empty) {
+                console.log("No task registered yet");
             } else {
-            querySnapshot.forEach(async (currentDoc) => {
-            // const task: Task = {
-            //     id: doc.id,
-            //     task: doc.data().task,
-            //     date: doc.data().date,
-            //     parent: doc.data().parent,
-            //     childName: doc.data().childName,
-            // }
-
-            const docRef = doc(db, 'tasks', currentDoc.id); // 'users' collection, 'user123' document ID
-
-            // Update the document
-            try {
-                await updateDoc(docRef, {
-                    ...task
+                querySnapshot.forEach(async (currentDoc) => {
+                    
+                    const docRef = doc(db, 'tasks', currentDoc.id);
+    
+                    // Retrieve the existing tasks array from the current document
+                    const tasksArray = currentDoc.data().tasks || [];
+    
+                    // Find the task index by matching the taskId
+                    const taskIndex = tasksArray.findIndex((t: any) => t.id === taskId);
+    
+                    if (taskIndex !== -1) {
+                        // Update the specific task in the array
+                        tasksArray[taskIndex] = { ...tasksArray[taskIndex], status: "Completed" }; // Merge task changes
+    
+                        // Update the document with the new tasks array
+                        await updateDoc(docRef, {
+                            tasks: tasksArray // Overwrite the entire tasks array
+                        });
+    
+                        console.log('Task successfully updated!', tasksArray);
+                        fetchTasks(); // Presumably a function that refreshes your tasks list
+                    } else {
+                        console.log('Task not found in the array');
+                    }
                 });
-
-                console.log('Document successfully updated!');
-                fetchTasks()
-            } catch (error) {
-                console.error('Error updating document: ', error);
             }
-            
-                
-            });
-            
-            }
-        
+        } catch (error) {
+            console.error('Error updating document: ', error);
+        }
     };
 
     const getTaskById = (id: string) => {
@@ -125,7 +182,7 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
     
 
     return (
-        <TaskContext.Provider value={{ tasks, addTaskToContext, editTaskInContext, getTaskById }}>
+        <TaskContext.Provider value={{ tasks, addTaskToContext, updateTask, getTaskById }}>
             {children}
         </TaskContext.Provider>
     );

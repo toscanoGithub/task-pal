@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { DateData } from 'react-native-calendars'
 import { Formik, FormikHelpers } from 'formik';
@@ -9,6 +9,11 @@ import { useTaskContext } from '@/contexts/TaskContext';
 import { Task } from '@/types/Entity';
 import InputWithAutocomplete from './InputWithAutocomplete';
 import { useUserContext } from '@/contexts/UserContext';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import EvilIcons from '@expo/vector-icons/EvilIcons';
+import Entypo from '@expo/vector-icons/Entypo';
+import { CiCirclePlus } from "react-icons/ci";
+
 
 interface AddTaskFormProps {
     date?: DateData;
@@ -17,9 +22,6 @@ interface AddTaskFormProps {
     toFamilyMember: string;
 }
 
-interface FormValues {
-    description: string;
-  };
 
   const validationSchema = Yup.object().shape({
     description: Yup.string().required("Task description is required"),
@@ -28,7 +30,9 @@ interface FormValues {
 const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus, toFamilyMember}) => {
     const {tasks, addTaskToContext} = useTaskContext()
     const [currentDayTask, setCurrentDayTask] = useState<Task>()
-  const {user} = useUserContext();
+    const {user} = useUserContext();
+
+    const [tempTasks, setTempTasks] = useState<Task[]>([])
 
     useEffect(() => {
       const tasksInCurrentDay = tasks.filter(task => task.id !== null && task.date.timestamp === date?.timestamp)
@@ -39,7 +43,7 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus, toF
     }, [tasks])
     
     
-   
+  
     
 
   return (
@@ -50,40 +54,56 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus, toF
         {/* Form */}
         <Formik 
             initialValues={{
-              description: currentDayTask?.description ?? "",
+              description: "",
             }}
             validationSchema={validationSchema}
             
             onSubmit={values => {
-                console.log(":::::::::::: submit form ::::::::::::::");
+                // console.log(":::::::::::: submit form ::::::::::::::");
                 // submit form to firestore
                 // const task = {...values, parent: {...user}, date, isCompleted: false} as Task
 
-                const task = { ...values, parent: { ...user }, date, isCompleted: false, toFamilyMember } as unknown as Task
+                const task = { ...values, parent: { ...user }, date, isCompleted: false, toFamilyMember: toFamilyMember } as unknown as Task
+                
                 addTaskToContext(task);
-                setCurrentDayTask(task)
-                dismiss()
+                // setCurrentDayTask(task)
+
+                // tempTasks.forEach(task => {
+                //   addTaskToContext(task);
+                // })
+                // dismiss()
                 
             }}
         >
     {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue, resetForm }) => 
             
             <View style={styles.inputsWrapper}>
-                    {/* DESCRIPTION */}
+                    <View style={{width:"100%", flexDirection: "row", justifyContent:"space-between", alignItems:"center"}}>
+                      {/* DESCRIPTION */}
                     <Input
                         style={styles.input}
-                        placeholder={`${currentDayTask ? currentDayTask.description : 'Task description'}`}
+                        placeholder='Task description'
                         value={ values.description}
                         onChangeText={handleChange('description')}
                       onBlur={handleBlur('description')}
                       onFocus={iHaveFocus}
                       status={touched.description && errors.description ? 'danger' : 'basic'}
                     />
+
+                    <TouchableOpacity onPress={() => {
+                      handleSubmit()
+                      setTimeout(() => {
+                        resetForm()
+                      }, 0);
+                    }} style={{position:"absolute", right:0, top: 15}}>
+                    <EvilIcons style={{marginTop: 3, opacity: 0.7}} name="plus" size={40} color={theme.secondary} />
+                    </TouchableOpacity>
+                    </View>
                      {touched.description && errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
 
 
                     
-                    <Button appearance='outline' onPress={() => {
+                    {/* <Button appearance='outline' onPress={() => {
                         handleSubmit()
                         // resetForm()
                         
@@ -91,7 +111,7 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus, toF
                         {evaProps => <Text style={{...evaProps, color:"#EDB232", fontSize: 20}} >
                             Done    
                         </Text>}
-                    </Button>
+                    </Button> */}
 
             </View>
             
@@ -144,6 +164,7 @@ const styles = StyleSheet.create({
         marginTop: 15,
         borderRadius: 50,
         borderWidth: 1,
-        borderColor: "#DDCA8750"
+        borderColor: "#DDCA8750",
+        position:"absolute", right:0, top: 15
       },
 })
