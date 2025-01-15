@@ -14,7 +14,6 @@ import db from '@/firebase/firebase-config';
 import { useTaskContext } from '@/contexts/TaskContext';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useRouter } from 'expo-router';
-import { dismiss } from 'expo-router/build/global-state/routing';
 
 const { height } = Dimensions.get('window');
 
@@ -23,6 +22,7 @@ interface TaskViewProps {
     tasksCurrentdDay: { description: string, id: string,}[],
     date?: DateData,
     allDone: () => void;
+    dismiss: () => void;
 }
 
 // Define a type for the button center
@@ -34,7 +34,7 @@ type ButtonCenter = {
 
 
 
-const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay, date, allDone }) => {
+const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay, date, allDone, dismiss }) => {
   const [confettiStates, setConfettiStates] = useState<{ [key: string]: boolean }>({}); // Track confetti per task
   const [buttonCenter, setButtonCenter] = useState<ButtonCenter | null>(null); // Button center can be null initially
   const confettiRef = useRef(null);
@@ -51,6 +51,7 @@ const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay, date, a
 
   const slideOut = () => {
     slidePosition.value = withTiming(-height, { duration: 300, easing: Easing.ease }); // Timing animation to slide out
+    dismiss();
   };
 
   useEffect(() => {
