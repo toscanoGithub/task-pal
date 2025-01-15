@@ -1,7 +1,7 @@
 import { Task } from '@/types/Entity';
 import { Text } from '@ui-kitten/components';
 import React, { useEffect, useRef, useState } from 'react';
-import { View, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Dimensions, StyleSheet, SafeAreaView } from 'react-native';
 import Animated, { Easing, withSpring, useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import theme from "../theme.json"
 import ConfettiCannon from 'react-native-confetti-cannon';
@@ -12,6 +12,9 @@ import { useUserContext } from '@/contexts/UserContext';
 import { collection, doc, getDocs, query, where } from 'firebase/firestore';
 import db from '@/firebase/firebase-config';
 import { useTaskContext } from '@/contexts/TaskContext';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { useRouter } from 'expo-router';
+import { dismiss } from 'expo-router/build/global-state/routing';
 
 const { height } = Dimensions.get('window');
 
@@ -31,7 +34,7 @@ type ButtonCenter = {
 
 
 
-const TaskView: React.FC<TaskViewProps> = ({ isVisible, tasksCurrentdDay, date, allDone }) => {
+const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay, date, allDone }) => {
   const [confettiStates, setConfettiStates] = useState<{ [key: string]: boolean }>({}); // Track confetti per task
   const [buttonCenter, setButtonCenter] = useState<ButtonCenter | null>(null); // Button center can be null initially
   const confettiRef = useRef(null);
@@ -102,11 +105,14 @@ const TaskView: React.FC<TaskViewProps> = ({ isVisible, tasksCurrentdDay, date, 
  
 
   return (
-    <View style={styles.container}>
-
+    <SafeAreaView style={styles.container}>
+      
       {/* Sliding view */}
       <Animated.View style={[styles.slidingView, animatedStyle]}>
-      <Text category='h1' style={{ color: theme['gradient-to'], marginTop: 120, fontSize: 18, lineHeight: 27, textTransform: "uppercase", paddingLeft: 10, textAlign: "center" }}>Your tasks for</Text>
+      <TouchableOpacity onPress={() =>slideOut()} style={{marginTop: 90,}}>
+      <AntDesign name="back" size={24} color="black" />
+            </TouchableOpacity>
+      <Text category='h1' style={{ color: theme['gradient-to'], marginTop: 30, fontSize: 18, lineHeight: 27, textTransform: "uppercase", paddingLeft: 10, textAlign: "center" }}>Your tasks for</Text>
         <Text  style={{ color: theme['gradient-to'], fontSize: 12, lineHeight: 18,  paddingLeft: 10, marginBottom: 20, textAlign: "center" }}>{date?.dateString}</Text>
         <View style={styles.content}>
           {tasksCurrentdDay.map(task => (
@@ -133,7 +139,7 @@ const TaskView: React.FC<TaskViewProps> = ({ isVisible, tasksCurrentdDay, date, 
           ))}
         </View>
       </Animated.View>
-    </View>
+    </SafeAreaView>
   );
 };
 
