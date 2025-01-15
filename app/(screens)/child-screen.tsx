@@ -104,6 +104,7 @@ const ChildScreen = () => {
       </View>
 
       <TaskView
+        dismiss={() => setShowTask(false)}
         tasksCurrentdDay={tasksForSelectedDay}
         isVisible={showTask}
         date={selectedDate}
