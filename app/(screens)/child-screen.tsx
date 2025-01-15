@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useUserContext } from '@/contexts/UserContext';
 import { Text } from '@ui-kitten/components';
@@ -75,6 +75,7 @@ const ChildScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Text style={styles.greetings} category="h4">Welcome, </Text>

@@ -7,7 +7,7 @@ import { useUserContext } from '@/contexts/UserContext';
 import LottieView from 'lottie-react-native';
 import { getAuth, signOut } from 'firebase/auth';
 import { useRouter } from 'expo-router';
-  
+
   
 interface HeaderProps {
     username: string;
@@ -54,6 +54,7 @@ const Header: React.FC<HeaderProps> = ({username}) => {
   
   return (
     <View style={styles.container}>
+      
       <View style={styles.row}>
 
         {
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
     row: {
         flexDirection:"row",
         width: "100%",
-        justifyContent: "space-between",
+        justifyContent: "flex-end",
         alignItems: "center",
         // paddingTop: 30,
         paddingHorizontal: 10
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
       username: {
         color: theme["secondary"],
         fontWeight: 900,
-        letterSpacing: 1
+        letterSpacing: 1,
       }
 
 

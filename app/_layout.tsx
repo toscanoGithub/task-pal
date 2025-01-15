@@ -62,7 +62,8 @@ export default function RootLayout() {
 
             {/* child screen */}
             <Stack.Screen name="(screens)/child-screen" 
-            options={{headerShown: true, title:"Child", headerBackVisible: false, 
+            options={{headerShown: true,  title:"Child", headerBackVisible: true, 
+              
               header: (props) => {
                 return <Header username='Child' />
               }
