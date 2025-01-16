@@ -63,6 +63,8 @@ const ChildScreen = () => {
   // Handler for when a day is pressed
   const handleDayPress = (date: DateData) => {
     const filteredTasks = tasks.filter(task => task.toFamilyMember === user?.name && date.dateString === task.date.dateString);
+    if(filteredTasks.length === 0) return;
+
     const taskItems = filteredTasks.map(task => task.tasks)[0] as unknown as TaskItem[];
     
     if (taskItems) {
