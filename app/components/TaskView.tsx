@@ -107,13 +107,14 @@ const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay, date, a
     // })
   }, [tasksCurrentdDay])
   
+const screenHeight = Dimensions.get("screen").height
 
   return (
     <SafeAreaView style={styles.container}>
       
       {/* Sliding view */}
       <Animated.View style={[styles.slidingView, animatedStyle]}>
-      <TouchableOpacity onPress={() =>slideOut()} style={{marginTop: 90,}}>
+      <TouchableOpacity onPress={() =>slideOut()} style={{marginTop: 0.15 * screenHeight, zIndex: 1000,}}>
       <AntDesign name="back" size={24} color="black" />
             </TouchableOpacity>
       <Text category='h1' style={{ color: theme['gradient-to'], marginTop: 30, fontSize: 18, lineHeight: 27, textTransform: "uppercase", paddingLeft: 10, textAlign: "center" }}>Your tasks for</Text>
