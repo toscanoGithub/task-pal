@@ -81,23 +81,18 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
             const querySnapshot = await getDocs(q);
     
             if (querySnapshot.empty) {
-                // If no task document exists for that date, create a new document
-                console.log("No Task registered yet. Creating a new document.");
-    
+                // If no task document exists for that date, create a new document    
                 const docRef = await addDoc(collection(db, "tasks"), { 
                     parent: task.parent,
                     toFamilyMember: task.toFamilyMember,
                     date: task.date,  // Store the date
                     tasks: [{description: task.description, id: uuid.v4(), status: "Pending"}] // Initialize tasks array with the task description
                 });
-                console.log("Document created with ID:", docRef.id);
     
                 // Optionally, fetch tasks (if you need to reflect the changes immediately)
                 fetchTasks();
             } else {
-                // If a task document already exists, update it by adding the new task description
-                console.log("Task registered for this date. Adding task to the existing document.");
-    
+                // If a task document already exists, update it by adding the new task description    
                 for (const currentDoc of querySnapshot.docs) {
                     const tasksDocRef = doc(db, "tasks", currentDoc.id);
     
@@ -113,13 +108,11 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
                             await updateDoc(tasksDocRef, {
                                 tasks: arrayUnion({description: task.description, id: uuid.v4(), status: "Pending"}) // Add the task description to the array without duplicating
                             });
-                            console.log("Task description added to existing tasks array.");
                         } else {
                             // If 'tasks' array doesn't exist, create it and add the task description
                             await updateDoc(tasksDocRef, {
                                 tasks: [{description: task.description, id: uuid.v4(), status: "Pending"}] // Create the tasks array with the first task description
                             });
-                            console.log("Tasks array was created and the task description was added.");
                         }
                     } else {
                         console.error("Document does not exist:", currentDoc.id);
@@ -163,7 +156,6 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
                             tasks: tasksArray // Overwrite the entire tasks array
                         });
     
-                        console.log('Task successfully updated!', tasksArray);
                         fetchTasks(); // Presumably a function that refreshes your tasks list
                     } else {
                         console.log('Task not found in the array');

@@ -36,10 +36,7 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus, toF
 
     useEffect(() => {
       const tasksInCurrentDay = tasks.filter(task => task.id !== null && task.date.timestamp === date?.timestamp)
-      setCurrentDayTask(tasksInCurrentDay[0])
-
-      console.log(":::::::::::::::", tasksInCurrentDay[0]);
-      
+      setCurrentDayTask(tasksInCurrentDay[0])      
     }, [tasks])
     
     
@@ -59,19 +56,10 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({date, dismiss, iHaveFocus, toF
             validationSchema={validationSchema}
             
             onSubmit={values => {
-                // console.log(":::::::::::: submit form ::::::::::::::");
-                // submit form to firestore
-                // const task = {...values, parent: {...user}, date, isCompleted: false} as Task
-
                 const task = { ...values, parent: { ...user }, date, isCompleted: false, toFamilyMember: toFamilyMember } as unknown as Task
                 
                 addTaskToContext(task);
-                // setCurrentDayTask(task)
-
-                // tempTasks.forEach(task => {
-                //   addTaskToContext(task);
-                // })
-                // dismiss()
+                
                 
             }}
         >

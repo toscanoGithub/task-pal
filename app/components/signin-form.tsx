@@ -59,7 +59,6 @@ const SigninForm: React.FC<signupProp> = ({ dismissModal, iHaveFocus }) => {
       } else {
         const foundUsers: User[] = []
         querySnapshot.forEach((doc) => {
-          // console.log(doc.id, doc.data());
           foundUsers.push({id: doc.id, ...doc.data()} as User)         
         });
         const foundUser = foundUsers.pop() as User;
@@ -76,7 +75,6 @@ const SigninForm: React.FC<signupProp> = ({ dismissModal, iHaveFocus }) => {
           
           if(foundUser.members) {
             const member = foundUser.members.filter(m => m.name === name)
-            console.log(":::::::::::", member);
             setUser((prev) => {
               if (prev && member.length > 0) {
                 return { ...prev, name: member[0].name };

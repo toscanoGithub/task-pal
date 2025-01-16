@@ -32,11 +32,16 @@ export interface Parent {
 }
 
 
+interface TaskItem {
+    id: string;
+    description: string;
+    status: string;
+}
 
 
 // Define the Task type
 export interface Task {
-    [x: string]: TaskItem[];
+    // [x: string]: TaskItem[];
     id?: string;
     date: DateData;
     parent: Parent;

@@ -26,7 +26,7 @@ interface FormValues {
   });
 
 const AddFamilyMemberForm: React.FC<AddFamilyMemberFormProps> = ({dismiss, iHaveFocus, addedBy}) => {
-    const {tasks, addTaskToContext, editTaskInContext} = useTaskContext()
+    const {tasks, addTaskToContext} = useTaskContext()
     const {updateUser, user} = useUserContext()
     const [currentDayTask, setCurrentDayTask] = useState<Task>()
 
@@ -51,7 +51,6 @@ const AddFamilyMemberForm: React.FC<AddFamilyMemberFormProps> = ({dismiss, iHave
             validationSchema={validationSchema}
             
             onSubmit={values => {
-                console.log(":::::::::::: submit form ::::::::::::::", values);
                 const {name, passcode} = values;
                 const newMember = {name, passcode}
                 // update user with newMember data

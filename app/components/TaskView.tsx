@@ -1,6 +1,6 @@
 import { Task } from '@/types/Entity';
 import { Text } from '@ui-kitten/components';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, Dimensions, StyleSheet, SafeAreaView } from 'react-native';
 import Animated, { Easing, withSpring, useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import theme from "../theme.json"
@@ -47,7 +47,13 @@ const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay, date, a
 
   // Trigger animation when the state changes
   const slideIn = () => {
-    slidePosition.value = withSpring(0, { damping: 20, stiffness: 100 }); // Spring animation to slide in
+    tasksCurrentdDay.forEach(t => {
+      setConfettiStates(prev => ({ ...prev, [t.id]: t.status === "Completed" }));
+    })
+    setTimeout(() => {
+      slidePosition.value = withSpring(0, { damping: 20, stiffness: 100 }); // Spring animation to slide in
+    }, );
+
   };
 
   const slideOut = () => {
@@ -76,7 +82,7 @@ const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay, date, a
       const q = query(collection(db, "tasks"), where("date", "==", date), where("toFamilyMember", "==", user!.name));
             const querySnapshot = await getDocs(q);
             if(querySnapshot.empty) {
-            console.log("no Task registered yet in handlePressDoneBtn")
+            console.log("no Task registered yet")
             } else {
               querySnapshot.forEach(async (currentDoc) => {
                   updateTask(currentDoc.data() as Task, taskId );
@@ -89,17 +95,17 @@ const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay, date, a
     setButtonCenter({ x: x + width / 2, y: y + height / 2 });
   };
 
-
+  
   
  
   useEffect(() => {
     
     if(!isVisible) return;
-    console.log(":::::::::::: tasksCurrentdDay ::::::::::::::", tasksCurrentdDay);
-    tasksCurrentdDay.forEach(t => {
-      setConfettiStates(prev => ({ ...prev, [t.id]: t.status === "Completed" }));
-    })
-  }, [isVisible, tasksCurrentdDay])
+    console.log("::::::::::: tasksCurrentdDay :::::::::::", tasksCurrentdDay);
+    // tasksCurrentdDay.forEach(t => {
+    //   setConfettiStates(prev => ({ ...prev, [t.id]: t.status === "Completed" }));
+    // })
+  }, [tasksCurrentdDay])
   
 
   return (
