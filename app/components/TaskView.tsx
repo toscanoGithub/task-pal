@@ -19,7 +19,7 @@ const { height } = Dimensions.get('window');
 
 interface TaskViewProps {
     isVisible: boolean;
-    tasksCurrentdDay: { description: string, id: string,}[],
+    tasksCurrentdDay: { description: string, id: string, status: string}[],
     date?: DateData,
     allDone: () => void;
     dismiss: () => void;
@@ -39,6 +39,7 @@ const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay, date, a
   const [buttonCenter, setButtonCenter] = useState<ButtonCenter | null>(null); // Button center can be null initially
   const confettiRef = useRef(null);
   const {user} = useUserContext();
+  const {tasks} = useTaskContext()
   const {updateTask} = useTaskContext()
 
   // Shared value to track the slide position
@@ -72,27 +73,14 @@ const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay, date, a
   // Handle Done button press and trigger confetti for the specific task
   const handlePressDoneBtn = async (taskId: string) => {
     setConfettiStates(prev => ({ ...prev, [taskId]: true }));
-    // update state >>> task status from "Pending" to "Completed"
-    /*
-      query tasks where date match date, where toFamilyMember match user.name and where tasks match tasksCurrentdDay
-      Update task with id that match taskId
-    */
-      
       const q = query(collection(db, "tasks"), where("date", "==", date), where("toFamilyMember", "==", user!.name));
             const querySnapshot = await getDocs(q);
             if(querySnapshot.empty) {
             console.log("no Task registered yet in handlePressDoneBtn")
             } else {
-              
               querySnapshot.forEach(async (currentDoc) => {
                   updateTask(currentDoc.data() as Task, taskId );
-                  console.log("currentDoc.data() --------- ", currentDoc.data());
-                  
-                  
-
-                  
                 });
-              
             }
   };
 
@@ -104,6 +92,15 @@ const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay, date, a
 
   
  
+  useEffect(() => {
+    
+    if(!isVisible) return;
+    console.log(":::::::::::: tasksCurrentdDay ::::::::::::::", tasksCurrentdDay);
+    tasksCurrentdDay.forEach(t => {
+      setConfettiStates(prev => ({ ...prev, [t.id]: t.status === "Completed" }));
+    })
+  }, [isVisible, tasksCurrentdDay])
+  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -126,6 +123,8 @@ const TaskView: React.FC<TaskViewProps> = ({isVisible, tasksCurrentdDay, date, a
                   <Text style={{ textAlign: "center" }}>Done</Text>
                 </TouchableOpacity>
               )}
+
+
 
               {/* Display the confetti animation for this task */}
               {confettiStates[task.id] && buttonCenter && (
