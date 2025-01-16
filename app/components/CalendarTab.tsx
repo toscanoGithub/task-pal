@@ -186,7 +186,7 @@ const CalendarTab = () => {
               <MaterialCommunityIcons name="close" size={32} color="red" />
             </Button>
             {modalType === "ADD_MEMBER" ? (
-              <AddFamilyMemberForm iHaveFocus={handleFormHasFocus} dismiss={() => setModalIsVisible(!modalIsVisible)} addedBy={user!.name} />
+               user && <AddFamilyMemberForm iHaveFocus={handleFormHasFocus} dismiss={() => setModalIsVisible(!modalIsVisible)} addedBy={user.name} />
             ) : selectedFamilyMember && (
               <AddTaskForm toFamilyMember={selectedFamilyMember} iHaveFocus={handleFormHasFocus} date={selectedDate} dismiss={() => setModalIsVisible(!modalIsVisible)} />
             )}
