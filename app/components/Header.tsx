@@ -44,7 +44,7 @@ const Header: React.FC<HeaderProps> = ({username}) => {
   
       }).catch((error) => {
         // An error happened.
-        console.log("Error to sign you out");
+        console.log("Error to sign you out", error);
       });
     } else {
       setUser(null)
