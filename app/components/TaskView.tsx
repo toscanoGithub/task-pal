@@ -12,6 +12,7 @@ import db from '@/firebase/firebase-config';
 import { DateData } from 'react-native-calendars';
 import { Task } from '@/types/Entity';
 
+
 const { height, width } = Dimensions.get('screen');
 
 interface TaskViewProps {
