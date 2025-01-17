@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useUserContext } from '@/contexts/UserContext';
 import { Text } from '@ui-kitten/components';
@@ -24,6 +24,8 @@ const ChildScreen = () => {
   const [modalType, setModalType] = useState<string>();
   const [tasksForSelectedDay, settasksForSelectedDay] = useState<TaskItem[]>([]);
   const [showTask, setShowTask] = useState(false);
+  const [taskDoneCounter, settaskDoneCounter] = useState(0);
+  const [daysCompletedCount, setDaysCompletedCount] = useState(0);  // New state to track days with all tasks completed
 
   useEffect(() => {
     // Filter tasks for the logged-in user
@@ -31,6 +33,7 @@ const ChildScreen = () => {
     
     // Build the marked dates object
     let daysWithTasksObj: MarkedDates = {};
+    let completedDays = 0; // Local variable to count days with all tasks completed
 
     filteredTasks.forEach(task => {
       // Check if the task has sub-tasks
@@ -54,11 +57,27 @@ const ChildScreen = () => {
           }
         }
       };
+
+      // Count days that are completely completed
+      if (allCompleted) {
+        completedDays += 1;
+      }
     });
 
-    // Update the state with the final object
+    // Set the state for marked dates and completed days
     setDaysWithTasks(daysWithTasksObj);
+    setDaysCompletedCount(completedDays); // Update completed days count
+
   }, [tasks, user?.name]);
+
+  useEffect(() => {
+    // Check if all days with tasks are marked as completed (green)
+    const totalDaysWithTasks = Object.keys(daysWithTasks).length; // Total days with tasks
+    if (daysCompletedCount === totalDaysWithTasks && totalDaysWithTasks > 0) {
+      // Trigger alert when all days with tasks are completed
+      // Alert.alert("Congratulations!", "You have completed all your tasks for the selected days.");
+    }
+  }, [daysCompletedCount, daysWithTasks]); // Re-run when daysCompletedCount or daysWithTasks changes
 
   // Handler for when a day is pressed
   const handleDayPress = (date: DateData) => {
@@ -106,7 +125,7 @@ const ChildScreen = () => {
       </View>
 
       <TaskView
-        dismiss={() => setShowTask(false)}
+        dismiss={() => setShowTask(false)}
         tasksCurrentdDay={tasksForSelectedDay}
         isVisible={showTask}
         date={selectedDate}
