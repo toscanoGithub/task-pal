@@ -77,7 +77,7 @@ const SigninForm: React.FC<signupProp> = ({ dismissModal, iHaveFocus }) => {
             const member = foundUser.members.filter(m => m.name === name)
             setUser((prev) => {
               if (prev && member.length > 0) {
-                return { ...prev, name: member[0].name };
+                return { ...prev, name: member[0].name};
               }
               return prev; // Or return null, depending on your logic
             });

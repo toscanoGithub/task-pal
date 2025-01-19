@@ -1,4 +1,4 @@
-import { Alert, SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Platform, SafeAreaView, StyleSheet, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useUserContext } from '@/contexts/UserContext';
 import { Text } from '@ui-kitten/components';
@@ -8,10 +8,33 @@ import { useTaskContext } from '@/contexts/TaskContext';
 import { Task } from '@/types/Entity';
 import TaskView from '../components/TaskView';
 
-interface TaskItem { 
-  description: string; 
-  id: string; 
-  status: string; 
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+
+async function sendPushNotification(expoPushToken: string) {
+  const message = {
+    to: expoPushToken,
+    sound: 'default',
+    title: 'All Tasks Completed!',
+    body: 'The child has completed all tasks for today.',
+    data: { someData: 'goes here' },
+  };
+
+  await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(message),
+  });
+}
+
+interface TaskItem {
+  description: string;
+  id: string;
+  status: string;
 }
 
 const ChildScreen = () => {
@@ -25,24 +48,67 @@ const ChildScreen = () => {
   const [tasksForSelectedDay, settasksForSelectedDay] = useState<TaskItem[]>([]);
   const [showTask, setShowTask] = useState(false);
   const [taskDoneCounter, settaskDoneCounter] = useState(0);
-  const [daysCompletedCount, setDaysCompletedCount] = useState(0);  // New state to track days with all tasks completed
+  const [daysCompletedCount, setDaysCompletedCount] = useState(0);
+  const [expoPushToken, setExpoPushToken] = useState('');
 
   useEffect(() => {
-    // Filter tasks for the logged-in user
+    registerForPushNotificationsAsync()
+      .then(token => setExpoPushToken(token ?? ''))
+      .catch((error: any) => alert(error));
+  }, []);
+
+  const registerForPushNotificationsAsync = async () => {
+    if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        alert('Permission not granted to get push token for push notification!');
+        return;
+      }
+      const projectId =
+        Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+      if (!projectId) {
+        alert('Project ID not found');
+      }
+      try {
+        const pushTokenString = (
+          await Notifications.getExpoPushTokenAsync({
+            projectId,
+          })
+        ).data;
+        return pushTokenString;
+      } catch (e: unknown) {
+        alert(`${e}`);
+      }
+    } else {
+      alert('Must use physical device for push notifications');
+    }
+  };
+
+  useEffect(() => {
     const filteredTasks = tasks.filter(task => task.toFamilyMember === user?.name);
-    
-    // Build the marked dates object
+
     let daysWithTasksObj: MarkedDates = {};
-    let completedDays = 0; // Local variable to count days with all tasks completed
+    let completedDays = 0;
 
     filteredTasks.forEach(task => {
-      // Check if the task has sub-tasks
       const taskItems = task.tasks as unknown as TaskItem[];
-      
-      // Check if all tasks for this day are completed
+
       const allCompleted = taskItems.every((item: TaskItem) => item.status === "Completed");
-      
-      // Mark the day with a green color if all tasks are completed, otherwise #4A817730
+
       daysWithTasksObj[task.date.dateString] = {
         selected: true,
         marked: true,
@@ -58,34 +124,42 @@ const ChildScreen = () => {
         }
       };
 
-      // Count days that are completely completed
       if (allCompleted) {
         completedDays += 1;
       }
     });
 
-    // Set the state for marked dates and completed days
     setDaysWithTasks(daysWithTasksObj);
-    setDaysCompletedCount(completedDays); // Update completed days count
+    setDaysCompletedCount(completedDays);
 
   }, [tasks, user?.name]);
 
   useEffect(() => {
-    // Check if all days with tasks are marked as completed (green)
-    const totalDaysWithTasks = Object.keys(daysWithTasks).length; // Total days with tasks
+    const totalDaysWithTasks = Object.keys(daysWithTasks).length;
     if (daysCompletedCount === totalDaysWithTasks && totalDaysWithTasks > 0) {
-      // Trigger alert when all days with tasks are completed
-      // Alert.alert("Congratulations!", "You have completed all your tasks for the selected days.");
+      notifyParentWithAllDone();
     }
-  }, [daysCompletedCount, daysWithTasks]); // Re-run when daysCompletedCount or daysWithTasks changes
+  }, [daysCompletedCount, daysWithTasks]);
 
-  // Handler for when a day is pressed
+  const notifyParentWithAllDone = async () => {
+    if (expoPushToken) {
+      const parentPushToken = getParentPushToken();  // Get parent's push token
+      if (parentPushToken) {        
+        await sendPushNotification(parentPushToken);  // Send notification to parent
+      }
+    }
+  };
+
+  const getParentPushToken = () => {
+    return user?.parentPushToken;  // Assuming parent's token is stored in user context
+  };
+
   const handleDayPress = (date: DateData) => {
     const filteredTasks = tasks.filter(task => task.toFamilyMember === user?.name && date.dateString === task.date.dateString);
     if(filteredTasks.length === 0) return;
 
     const taskItems = filteredTasks.map(task => task.tasks)[0] as unknown as TaskItem[];
-    
+
     if (taskItems) {
       settasksForSelectedDay(taskItems);
     }
@@ -96,7 +170,7 @@ const ChildScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      
+      <Text>Your Expo push token: {expoPushToken}</Text>
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Text style={styles.greetings} category="h4">Welcome, </Text>
@@ -142,25 +216,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F7F8FC",
   },
-
   header: {
     paddingVertical: 10,
     marginBottom: 30,
     paddingHorizontal: 10,
   },
-
   greetings: {
     fontWeight: 700,
     fontSize: 16,
     lineHeight: 24,
   },
-
   instructions: {
     fontSize: 16,
     fontWeight: 300,
     color: "#2B2B2B",
   },
-
   calendarContainer: {
     marginTop: -20,
     borderWidth: 1,

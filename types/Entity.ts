@@ -21,6 +21,7 @@ export interface FamilyMember {
     name: string;
     passcode: string;
     email?: string;
+    parentPushToken?: string;
 }
 
 
