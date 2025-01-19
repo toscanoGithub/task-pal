@@ -10,6 +10,7 @@ import TasksTab from '../components/TasksTab';
 import { User } from '@/types/Entity';
 import { doc, updateDoc } from 'firebase/firestore';
 import db from '@/firebase/firebase-config';
+import { useTaskContext } from '@/contexts/TaskContext';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -23,12 +24,21 @@ const ParentScreen = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [expoPushToken, setExpoPushToken] = useState('');
   const { user, setUser, updateUser } = useUserContext();  // Using user context
+  const [shouldUpdateUi, setShouldUpdateUi] = useState(false)
+  const {fetchTasks} = useTaskContext()
 
   useEffect(() => {
+    if(!shouldUpdateUi) return;
+    fetchTasks()
+  }, [shouldUpdateUi])
+  
+
+  useEffect(() => {
+    // Register for push notifications
     registerForPushNotificationsAsync()
-      .then(async token => {
+      .then(async (token) => {
         setExpoPushToken(token ?? '')
-        setUser(prev => {
+        setUser((prev) => {
           if (prev) {
             // If prev is not null, just update the pushToken field
             return { ...prev, parentPushToken: token };
@@ -45,15 +55,23 @@ const ParentScreen = () => {
           }
         });
 
-      // firestore users
-      const docRef = doc(db, 'users', user?.id ?? 'userid');
-      await updateDoc(docRef, {parentPushToken: token})
-        
-
-
-
+        // Firestore users
+        const docRef = doc(db, 'users', user?.id ?? 'userid');
+        await updateDoc(docRef, { parentPushToken: token });
       })
       .catch((error: any) => alert(error));
+
+    // Add listener for notification when received
+    const notificationSubscription = Notifications.addNotificationReceivedListener(notification => {
+      // alert(`Notification received: ${notification.request.content.body}`);
+      setShouldUpdateUi(true)
+
+    });
+
+    // Clean up the listener when component unmounts
+    return () => {
+      notificationSubscription.remove();
+    };
   }, []);
 
   const registerForPushNotificationsAsync = async () => {
@@ -88,7 +106,7 @@ const ParentScreen = () => {
           })
         ).data;
         console.log("Parent pushTokenString :::::::::::", pushTokenString);
-        
+
         return pushTokenString;
       } catch (e: unknown) {
         alert(`${e}`);
@@ -112,7 +130,6 @@ const ParentScreen = () => {
           <TasksTab />
         )}
       </View>
-      
     </View>
   );
 };
@@ -129,7 +146,3 @@ const styles = StyleSheet.create({
     padding: 10,
   },
 });
-
-
-
-

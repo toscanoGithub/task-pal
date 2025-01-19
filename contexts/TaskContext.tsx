@@ -33,6 +33,7 @@ interface TaskContextType {
     addTaskToContext: (task: Task) => void;
     updateTask: (task: Task, taskId: string) => void;
     getTaskById: (id: string) => Task | undefined;
+    fetchTasks: () => void; // needed to update ui when received notifications
 }
 
 // Create a context with default values
@@ -174,7 +175,7 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
     
 
     return (
-        <TaskContext.Provider value={{ tasks, addTaskToContext, updateTask, getTaskById }}>
+        <TaskContext.Provider value={{ tasks, addTaskToContext, updateTask, getTaskById, fetchTasks }}>
             {children}
         </TaskContext.Provider>
     );
