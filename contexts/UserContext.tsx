@@ -6,17 +6,18 @@ import { Alert } from 'react-native';
 
 type AuthUser = {
     id?: string;
-    email: string;
+    email?: string;
     name: string;
     isFamilyMember: boolean;
     members?: FamilyMember[];
+    parentPushToken?: string;
 };
 
 type UserContextType = {
     email: string | undefined;
     user: AuthUser | null;
     setUser: React.Dispatch<React.SetStateAction<AuthUser | null>>;
-    updateUser: React.Dispatch<{ name: string; passcode: string }>;
+    updateUser: React.Dispatch<{ name: string; passcode: string, parentPushToken: string }>;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -32,7 +33,7 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
         email: user?.email,
         user,
         setUser,
-        updateUser: async function (value: { name: string; passcode: string }): Promise<void> {
+        updateUser: async function (value: { name: string; passcode: string, parentPushToken: string }): Promise<void> {
             // Query the doc to edit
             const userId = user!.id;
             const docRef = doc(db, 'users', user?.id ?? 'userid');
@@ -40,7 +41,7 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
             // Object you want to push to the 'members' array
             const newMember: FamilyMember = {
                 ...value,
-                email: user?.email
+                email: user?.email,
             };
 
             // Update the document
@@ -56,7 +57,9 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
                         email: user?.email ?? '',
                         name: '',
                         isFamilyMember: false,
-                        members: [newMember]  // Set the new member in the array
+                        members: [newMember],  // Set the new member in the array
+                        parentPushToken: ""
+                        
                     };
                 }
             
