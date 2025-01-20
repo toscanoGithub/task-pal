@@ -1,4 +1,4 @@
-import { Animated, Modal, SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Animated, Modal, SafeAreaView, StyleSheet, TouchableOpacity, View, Image } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Button, IndexPath, Text } from '@ui-kitten/components';
 import { Calendar, DateData } from 'react-native-calendars';
@@ -16,7 +16,11 @@ import AddFamilyMemberForm from '../components/AddFamilyMemberForm';
 import { FamilyMember } from '@/types/Entity';
 import Popover from 'react-native-popover-view';
 
-const CalendarTab = () => {
+interface CalendarTabProps {
+  showLikeBtn: boolean,
+  notificationSender: string;
+}
+const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSender}) => {
   // task context
   const { tasks } = useTaskContext();
   const { user } = useUserContext();
@@ -29,6 +33,8 @@ const CalendarTab = () => {
   const [isPopoverContentVisible, setIsPopoverContentVisible] = useState(false);
   const [modalType, setModalType] = useState<string>()
   const [expandedModal, setExpandedModal] = useState(false)
+  const {fetchTasks} = useTaskContext()
+  const [allDone, setAllDone] = useState(false)
 
   const memberSelected = (member: FamilyMember) => {
     if (member.name === selectedFamilyMember) {
@@ -54,11 +60,15 @@ const CalendarTab = () => {
     setModalIsVisible(!modalIsVisible);
   };
 
-  useEffect(() => {
-    if (user?.members) setSelectedFamilyMember(user!.members[0].name);
-  }, []);
+  useEffect(() => { 
+    if (user?.members && !selectedFamilyMember) {
+      setSelectedFamilyMember(notificationSender || user!.members[0].name)
+    }
+  }, [notificationSender]);
 
   useEffect(() => {
+    console.log(":::::::::::: notificationSender ::::::::::::::", notificationSender);
+    
     const tasksDates = tasks.map(task => {
       return task.toFamilyMember === selectedFamilyMember ? task.date : null;
     }).filter((taskDate): taskDate is DateData => taskDate !== null); // Filter out null values
@@ -81,11 +91,17 @@ const CalendarTab = () => {
           dotColor: "#ff0000",
           selectedColor: allCompleted ? "green" : "#4A817730", // green for completed, transparent for incomplete
         };
+
+        setAllDone(allCompleted)
+
       }
     });
   
     setDaysWithTasks(newDaysWithTasks);
   }, [tasks, selectedFamilyMember]);
+  
+ 
+
   
 
   const dismissModal = () => {
@@ -119,6 +135,7 @@ const CalendarTab = () => {
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Text style={styles.greetings} category="h4">Welcome, </Text>
           <Text style={styles.greetings} category="h4">{user?.name}</Text>
+          
         </View>
         <Text style={styles.instructions} category="s2">
           Interact with the calendar below to add/manage tasks for your family members.
@@ -128,6 +145,12 @@ const CalendarTab = () => {
       {user?.members && (
         <View style={{ flexDirection: "row", width: "100%", paddingHorizontal: 10, justifyContent: "space-between", alignItems: "center" }}>
           <Text style={{ color: theme.secondary, fontSize: 16 }} category="h6">{selectedFamilyMember}</Text>
+          {allDone  && (<TouchableOpacity style={styles.likeImageBtn}>
+          <Image
+            source={require('../../assets/notifications/like.png')}
+            style={styles.likeImage}
+          />
+          </TouchableOpacity>)}
           <View style={{ marginLeft: "auto" }}>
             <Popover
               isVisible={isPopoverContentVisible}
@@ -145,7 +168,10 @@ const CalendarTab = () => {
               )}
             >
               {user.members.map(member => (
-                <Button style={{ width: 150 }} status="info" onPress={() => memberSelected(member)} key={member.name}>
+                <Button style={{ width: 150 }} status="info" onPress={() => {
+                  fetchTasks()
+                  memberSelected(member)
+                }} key={member.name}>
                   {evaProps => <Text style={{ color: "white", fontSize: 14, ...evaProps }}>{member.name}</Text>}
                 </Button>
               ))}
@@ -271,4 +297,15 @@ const styles = StyleSheet.create({
     borderColor: "#DDCA8770",
     backgroundColor: "transparent",
   },
+
+  likeImageBtn: {
+    width: 40,  // width of the image
+    height: 40, // height of the image,
+  },
+
+  likeImage: {
+    width: "100%",  // width of the image
+    height: "100%", // height of the image
+    resizeMode: 'contain', // or 'cover', 'stretch', etc.
+  }
 });

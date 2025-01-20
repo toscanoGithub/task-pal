@@ -25,6 +25,7 @@ const ParentScreen = () => {
   const [expoPushToken, setExpoPushToken] = useState('');
   const { user, setUser, updateUser } = useUserContext();  // Using user context
   const [shouldUpdateUi, setShouldUpdateUi] = useState(false)
+  const [notifiiedFromFamilyMemeber, setNotifiiedFromFamilyMemeber] = useState("")
   const {fetchTasks} = useTaskContext()
 
   useEffect(() => {
@@ -63,8 +64,9 @@ const ParentScreen = () => {
 
     // Add listener for notification when received
     const notificationSubscription = Notifications.addNotificationReceivedListener(notification => {
-      // alert(`Notification received: ${notification.request.content.body}`);
+      // alert(`Notification received: ${notification.request.content.data.familyMember}`);
       setShouldUpdateUi(true)
+      setNotifiiedFromFamilyMemeber(notification.request.content.data.familyMember)
 
     });
 
@@ -125,7 +127,7 @@ const ParentScreen = () => {
 
       <View style={styles.tabContent}>
         {selectedIndex === 0 ? (
-          <CalendarTab />
+          <CalendarTab showLikeBtn={shouldUpdateUi} notificationSender={notifiiedFromFamilyMemeber} />
         ) : (
           <TasksTab />
         )}
