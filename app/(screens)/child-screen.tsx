@@ -12,24 +12,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 
-async function sendPushNotification(expoPushToken: string) {
-  const message = {
-    to: expoPushToken,
-    sound: 'default',
-    title: 'All Tasks Completed!',
-    body: 'The child has completed all tasks for today.',
-    data: { someData: 'goes here' },
-  };
 
-  await fetch('https://exp.host/--/api/v2/push/send', {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(message),
-  });
-}
 
 interface TaskItem {
   description: string;
@@ -50,6 +33,25 @@ const ChildScreen = () => {
   const [taskDoneCounter, settaskDoneCounter] = useState(0);
   const [daysCompletedCount, setDaysCompletedCount] = useState(0);
   const [expoPushToken, setExpoPushToken] = useState('');
+
+  async function sendPushNotification(expoPushToken: string) {
+    const message = {
+      to: expoPushToken,
+      sound: 'default',
+      title: 'All Tasks Completed!',
+      body: `${user?.name} has completed all tasks for today.`,
+      data: { familyMember: user?.name },
+    };
+  
+    await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    });
+  }
 
   useEffect(() => {
     registerForPushNotificationsAsync()

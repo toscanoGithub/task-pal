@@ -3,7 +3,7 @@ import { Input, Text } from '@ui-kitten/components';
 import { FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { useUserContext } from '@/contexts/UserContext';
 import theme from "../theme.json"
-import { Child } from '@/types/Entity';
+import { FamilyMember } from '@/types/Entity';
 
 interface InputWithAutocompleteProps {
   getMemberNameValue: (name: string) => void;
@@ -12,9 +12,9 @@ interface InputWithAutocompleteProps {
 
 const InputWithAutocomplete: React.FC<InputWithAutocompleteProps> = ({getMemberNameValue, placeholder}) => {
   const [query, setQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<Child[]>([]);
+  const [suggestions, setSuggestions] = useState<FamilyMember[]>([]);
   const {user} = useUserContext()
-  const [membersForUser, setMembersForUser] = useState<Child[]>([])
+  const [membersForUser, setMembersForUser] = useState<FamilyMember[]>([])
   
   useEffect(() => {
     if(user?.members) {
