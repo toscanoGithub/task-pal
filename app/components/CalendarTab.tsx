@@ -60,11 +60,11 @@ const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSende
     setModalIsVisible(!modalIsVisible);
   };
 
-  useEffect(() => { 
-      if (user?.members && !selectedFamilyMember) {
-        setSelectedFamilyMember(user!.members[0].name)
-      }
-  }, []);
+  // useEffect(() => { 
+  //     if (user?.members && !selectedFamilyMember) {
+  //       setSelectedFamilyMember(user!.members[0].name)
+  //     }
+  // }, []);
 
   useEffect(() => {
     const tasksDates = tasks.map(task => {
@@ -102,6 +102,7 @@ const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSende
 
   useEffect(() => {
     if(notificationSender === "") return;
+    setSelectedFamilyMember(notificationSender)
     fetchTasks()
     
   }, [notificationSender])
