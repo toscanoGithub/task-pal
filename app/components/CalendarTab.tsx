@@ -61,29 +61,27 @@ const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSende
   };
 
   useEffect(() => { 
-    if (user?.members && !selectedFamilyMember) {
-      setSelectedFamilyMember(notificationSender || user!.members[0].name)
-    }
-  }, [notificationSender]);
+      if (user?.members && !selectedFamilyMember) {
+        setSelectedFamilyMember(user!.members[0].name)
+      }
+  }, []);
 
   useEffect(() => {
-    console.log(":::::::::::: notificationSender ::::::::::::::", notificationSender);
-    
     const tasksDates = tasks.map(task => {
       return task.toFamilyMember === selectedFamilyMember ? task.date : null;
     }).filter((taskDate): taskDate is DateData => taskDate !== null); // Filter out null values
   
     // Initialize the daysWithTasks object
     const newDaysWithTasks: MarkedDates = {};
-  
+    
     tasksDates.forEach(td => {
       // Filter tasks for the given date and family member
       const taskItems = tasks.filter(task => task.date.dateString === td.dateString && task.toFamilyMember === selectedFamilyMember)[0]?.tasks;
-  
+      
       if (taskItems) {
         // Type assertion to specify taskItems as an array of objects with a `status` property
         const allCompleted = (taskItems as unknown as { status: string }[]).every((item) => item.status === 'Completed');
-        
+        console.log(":::::::: allCompleted ::::::::::", allCompleted);
         newDaysWithTasks[td.dateString] = {
           selected: true,
           marked: true,
@@ -99,6 +97,15 @@ const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSende
   
     setDaysWithTasks(newDaysWithTasks);
   }, [tasks, selectedFamilyMember]);
+
+
+
+  useEffect(() => {
+    if(notificationSender === "") return;
+    fetchTasks()
+    
+  }, [notificationSender])
+  
   
  
 
@@ -159,7 +166,9 @@ const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSende
                 <TouchableOpacity
                   disabled={user.members.length === 0}
                   style={{ borderWidth: 1, borderRadius: 5, borderColor: "#ffffff", padding: 10, marginRight: 10, marginBottom: 3, backgroundColor: theme['gradient-to'] }}
-                  onPress={() => setIsPopoverContentVisible(!isPopoverContentVisible)}
+                  onPress={() => {
+                    setIsPopoverContentVisible(!isPopoverContentVisible)
+                  }}
                 >
                   <Text category="h6" style={{ color: theme.secondary, fontSize: 12, fontWeight: 900 }}>
                     {user.members && user.members.length ? "Select a family member" : "No family members yet"}
@@ -309,3 +318,4 @@ const styles = StyleSheet.create({
     resizeMode: 'contain', // or 'cover', 'stretch', etc.
   }
 });
+
