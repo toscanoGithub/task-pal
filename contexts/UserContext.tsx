@@ -11,6 +11,7 @@ type AuthUser = {
     isFamilyMember: boolean;
     members?: FamilyMember[];
     parentPushToken?: string;
+    memberPushToken?: string;
 };
 
 type UserContextType = {
@@ -42,6 +43,9 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
             const newMember: FamilyMember = {
                 ...value,
                 email: user?.email,
+                memberPushToken: function (arg0: string, memberPushToken: any): unknown {
+                    return ""
+                }
             };
 
             // Update the document

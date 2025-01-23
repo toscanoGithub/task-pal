@@ -11,6 +11,8 @@ import TaskView from '../components/TaskView';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import db from '@/firebase/firebase-config';
 
 
 
@@ -22,7 +24,7 @@ interface TaskItem {
 
 const ChildScreen = () => {
   const { tasks } = useTaskContext();
-  const { user } = useUserContext();
+  const { user, setUser } = useUserContext();
   const [modalIsVisible, setModalIsVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState<DateData>();
   const [daysWithTasks, setDaysWithTasks] = useState<MarkedDates>({});
@@ -35,12 +37,15 @@ const ChildScreen = () => {
   const [expoPushToken, setExpoPushToken] = useState('');
 
   async function sendPushNotification(expoPushToken: string) {
+    const pt = user?.members?.find(u => u.name === user.name);
+    console.log("::::: pt", pt);
+    
     const message = {
       to: expoPushToken,
       sound: 'default',
       title: 'All Tasks Completed!',
       body: `${user?.name} has completed all tasks for today.`,
-      data: { familyMember: user?.name },
+      data: { ...pt },
     };
   
     await fetch('https://exp.host/--/api/v2/push/send', {
@@ -54,10 +59,64 @@ const ChildScreen = () => {
   }
 
   useEffect(() => {
-    registerForPushNotificationsAsync()
-      .then(token => setExpoPushToken(token ?? ''))
-      .catch((error: any) => alert(error));
-  }, []);
+    const registerPushToken = async () => {
+      const token = await registerForPushNotificationsAsync();
+      if (!token) return;
+
+      setExpoPushToken(token);
+
+      const docRef = doc(db, 'users', user?.id ?? 'userid');
+
+      try {
+        const userDoc = await getDoc(docRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const members = userData?.members || [];
+
+          const memberIndex = members.findIndex((member: { name: string | undefined }) => member.name === user?.name);
+
+          if (memberIndex !== -1) {
+            const currentMember = members[memberIndex];
+
+            if (currentMember.memberPushToken !== token) {
+              const updatedMember = {
+                ...currentMember,
+                memberPushToken: token,
+              };
+
+              const updatedMembers = [
+                ...members.slice(0, memberIndex),
+                updatedMember,
+                ...members.slice(memberIndex + 1),
+              ];
+
+              await updateDoc(docRef, {
+                members: updatedMembers,
+              });
+
+              setUser(prev => {
+                if (prev) {
+                  return {
+                    ...prev,
+                    members: updatedMembers,
+                  };
+                }
+                return prev;
+              });
+              console.log('Push token updated successfully');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching or updating user document:', error);
+      }
+    };
+
+    if (user?.id && user?.name) {
+      registerPushToken();
+    }
+  }, [user?.id, user?.name]);
 
   const registerForPushNotificationsAsync = async () => {
     if (Platform.OS === 'android') {
