@@ -15,6 +15,8 @@ import { Alert } from 'react-native';
 import AddFamilyMemberForm from '../components/AddFamilyMemberForm';
 import { FamilyMember } from '@/types/Entity';
 import Popover from 'react-native-popover-view';
+import * as Notifications from 'expo-notifications';
+
 
 interface CalendarTabProps {
   showLikeBtn: boolean,
@@ -137,6 +139,39 @@ const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSende
     setModalIsVisible(true);
   };
 
+
+
+  async function sendPushNotification(expoPushToken: string) {
+    const pt = user?.members?.find(u => u.name === notificationSender);
+    console.log("::::: pt", pt);
+    
+    const message = {
+      to: expoPushToken,
+      sound: 'default',
+      title: 'Great job!',
+      body: `${pt?.name} You completed all tasks of the week.`,
+      data: { ...pt },
+    };
+  
+    await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    });
+  }
+
+  const congratNotificationSender = () => {
+    const pt = user?.members?.find(m => m.name === notificationSender);
+    
+    if(pt) {
+      sendPushNotification(pt!.memberPushToken as unknown as string)
+    }
+    
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -153,7 +188,7 @@ const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSende
       {user?.members && (
         <View style={{ flexDirection: "row", width: "100%", paddingHorizontal: 10, justifyContent: "space-between", alignItems: "center" }}>
           <Text style={{ color: theme.secondary, fontSize: 16 }} category="h6">{selectedFamilyMember}</Text>
-          {allDone  && (<TouchableOpacity style={styles.likeImageBtn}>
+          {allDone  && (<TouchableOpacity onPress={congratNotificationSender} style={styles.likeImageBtn}>
           <Image
             source={require('../../assets/notifications/like.png')}
             style={styles.likeImage}

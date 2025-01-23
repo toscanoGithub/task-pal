@@ -18,6 +18,7 @@ export interface AuthUser {
 }
 
 export interface FamilyMember {
+    memberPushToken(arg0: string, memberPushToken: any): unknown;
     name: string;
     passcode: string;
     email?: string;

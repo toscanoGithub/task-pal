@@ -65,7 +65,7 @@ const ParentScreen = () => {
     // Add listener for notification when received
     const notificationSubscription = Notifications.addNotificationReceivedListener(notification => {
       // alert(`Notification received: ${notification.request.content.data.familyMember}`);
-      setNotifiiedFromFamilyMemeber(notification.request.content.data.familyMember)
+      setNotifiiedFromFamilyMemeber(notification.request.content.data.name)
       setShouldUpdateUi(true)
 
     });
