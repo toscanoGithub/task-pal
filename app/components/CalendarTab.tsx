@@ -149,7 +149,7 @@ const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSende
       to: expoPushToken,
       sound: 'default',
       title: 'Great job!',
-      body: `${pt?.name} You completed all tasks of the week.`,
+      body: `${selectedFamilyMember} You completed all tasks of the week.`,
       data: { ...pt },
     };
   
@@ -164,7 +164,7 @@ const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSende
   }
 
   const congratNotificationSender = () => {
-    const pt = user?.members?.find(m => m.name === notificationSender);
+    const pt = user?.members?.find(m => m.name === selectedFamilyMember);
     
     if(pt) {
       sendPushNotification(pt!.memberPushToken as unknown as string)
