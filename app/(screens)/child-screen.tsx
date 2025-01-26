@@ -1,5 +1,5 @@
 import { Platform, SafeAreaView, StyleSheet, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useUserContext } from '@/contexts/UserContext';
 import { Text } from '@ui-kitten/components';
 import { Calendar } from 'react-native-calendars';
@@ -7,14 +7,14 @@ import { DateData, MarkedDates } from 'react-native-calendars/src/types';
 import { useTaskContext } from '@/contexts/TaskContext';
 import { Task } from '@/types/Entity';
 import TaskView from '../components/TaskView';
+import LottieView from 'lottie-react-native';
 
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import db from '@/firebase/firebase-config';
-
-
+import RewardSlidingImage from '../components/RewardSlidingImage';
 
 interface TaskItem {
   description: string;
@@ -35,6 +35,9 @@ const ChildScreen = () => {
   const [taskDoneCounter, settaskDoneCounter] = useState(0);
   const [daysCompletedCount, setDaysCompletedCount] = useState(0);
   const [expoPushToken, setExpoPushToken] = useState('');
+
+  const [showReward, setShowReward] = useState(false)
+  const rewardLottieRef = useRef<LottieView>(null)
 
   async function sendPushNotification(expoPushToken: string) {
     const pt = user?.members?.find(u => u.name === user.name);
@@ -116,7 +119,26 @@ const ChildScreen = () => {
     if (user?.id && user?.name) {
       registerPushToken();
     }
+
+    // Notification received listener
+    const subscription = Notifications.addNotificationReceivedListener(notification => {
+      const title = notification.request.content.title;
+      const body = notification.request.content.body;
+      // alert(`${title}: ${body}`);
+      setShowReward(true)
+    });
+
+    // Cleanup the listener when the component unmounts
+    return () => subscription.remove();
   }, [user?.id, user?.name]);
+
+
+  useEffect(() => {
+    if(showReward && rewardLottieRef.current) {
+      rewardLottieRef.current.play(0)
+    }
+  }, [showReward])
+  
 
   const registerForPushNotificationsAsync = async () => {
     if (Platform.OS === 'android') {
@@ -150,6 +172,7 @@ const ChildScreen = () => {
             projectId,
           })
         ).data;
+        
         return pushTokenString;
       } catch (e: unknown) {
         alert(`${e}`);
@@ -231,6 +254,12 @@ const ChildScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {showReward && <RewardSlidingImage />}
+      {showReward && <LottieView ref={rewardLottieRef}
+        source={require('../../assets/animations/lottie-reward.json')} // Path to your confetti animation JSON
+        loop={false}
+        style={{position:"absolute", left: 0, top: 0, right: 0, bottom:0, zIndex: 3000, pointerEvents:"none"}}
+      />}
       <Text>Your Expo push token: {expoPushToken}</Text>
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -259,6 +288,7 @@ const ChildScreen = () => {
         />
       </View>
 
+      
       <TaskView
         dismiss={() => setShowTask(false)}
         tasksCurrentdDay={tasksForSelectedDay}
