@@ -1,7 +1,7 @@
-import { Platform, SafeAreaView, StyleSheet, View } from 'react-native';
+import { Platform, SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { useUserContext } from '@/contexts/UserContext';
-import { Text } from '@ui-kitten/components';
+import { Button, Text } from '@ui-kitten/components';
 import { Calendar } from 'react-native-calendars';
 import { DateData, MarkedDates } from 'react-native-calendars/src/types';
 import { useTaskContext } from '@/contexts/TaskContext';
@@ -15,6 +15,9 @@ import Constants from 'expo-constants';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import db from '@/firebase/firebase-config';
 import RewardSlidingImage from '../components/RewardSlidingImage';
+import theme from "../theme.json"
+import { useRouter } from 'expo-router';
+import { MotiView } from 'moti';
 
 interface TaskItem {
   description: string;
@@ -38,6 +41,8 @@ const ChildScreen = () => {
 
   const [showReward, setShowReward] = useState(false)
   const rewardLottieRef = useRef<LottieView>(null)
+  const [showRevealRewardBtn,  setshowRevealRewardBtn] = useState(false)
+  const router = useRouter()
 
   async function sendPushNotification(expoPushToken: string) {
     const pt = user?.members?.find(u => u.name === user.name);
@@ -252,15 +257,57 @@ const ChildScreen = () => {
     setShowTask(!showTask);
   };
 
+  const [revealRewardBtnPressed, setRevealRewardBtnPressed] = useState(false)
+
+  const revealReward = () => {
+    
+    setRevealRewardBtnPressed(true)
+    setTimeout(() => {
+      setRevealRewardBtnPressed(false)
+    }, 300);
+
+    setTimeout(() => {
+      router.push("/(screens)/reward-screen")
+    }, 500);
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       {showReward && <RewardSlidingImage />}
-      {showReward && <LottieView ref={rewardLottieRef}
+      {showRevealRewardBtn &&  <MotiView
+      from={{
+        rotate: '-5deg',
+      }}
+      animate={{
+        rotate: '10deg',
+      }}
+      transition={{
+        type: 'timing',
+        duration: 300,
+        loop: true,
+      }}
+      style={styles.animationContainer}
+    >
+      <Button
+        style={[
+          styles.revealRewardBtn,
+          { borderBottomWidth: revealRewardBtnPressed ? 0 : 10 },
+        ]}
+        onPress={revealReward}
+      >
+        {(evaProps) => (
+          <Text style={styles.revealRewardTextBtn}>Reveal my reward</Text>
+        )}
+      </Button>
+    </MotiView>}
+      {showReward && <LottieView  onAnimationFinish={() => setTimeout(() => {
+        setshowRevealRewardBtn(true)
+      }, 5000)} ref={rewardLottieRef}
         source={require('../../assets/animations/lottie-reward.json')} // Path to your confetti animation JSON
         loop={false}
         style={{position:"absolute", left: 0, top: 0, right: 0, bottom:0, zIndex: 3000, pointerEvents:"none"}}
       />}
-      <Text>Your Expo push token: {expoPushToken}</Text>
+      
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Text style={styles.greetings} category="h4">Welcome, </Text>
@@ -306,6 +353,34 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F7F8FC",
+    
+  },
+
+  animationContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2000,
+    top: "30%",
+  },
+  revealRewardBtn: {
+    position:"absolute",
+    alignSelf: "center",
+    
+    backgroundColor: theme['gradient-from'],
+    borderRadius: 70,
+    paddingHorizontal: 50,
+    paddingVertical: 30,
+    borderTopWidth: 0,
+    borderBottomColor: theme.secondary
+    
+  },
+
+  revealRewardTextBtn: {
+    color: theme.secondary,
+    fontSize: 24,
+    textTransform: "capitalize",
+    fontWeight: "300",
+
   },
   header: {
     paddingVertical: 10,

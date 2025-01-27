@@ -29,7 +29,9 @@ const auth = () => {
     const [modalType, setModalType] = useState("SIGN IN")
     const [isrewardDay, setIsrewardDay] = useState(false)
     const [expandedModal, setExpandedModal] = useState(false)
-    
+    const [signinPressed, setSigninPressed] = useState(false)
+    const [signupPressed, setSignupPressed] = useState(false)
+
     const dismissModal = () => {
       setExpandedModal(false)
       // Animate height between 80% and 100% of the screen height
@@ -67,17 +69,25 @@ const auth = () => {
       <View style={styles.buttonsRow}>
         {/* SIGN IN BUTTON */}
         <Button onPress={() => {
+            setSigninPressed(true)
+            setTimeout(() => {
+              setSigninPressed(false)
+            },450);
             setModalType("SIGN IN")
             setModalIsVisible(true)
-        }} style={styles.authBtn} appearance='outline' 
+        }} style={[styles.authBtn, {borderBottomWidth: signinPressed ? 0 : 3} ]} appearance='outline' 
          status='primary'>
           {evaProps => <Text  {...evaProps} style={{color:"#ffffff"}}>SIGN IN</Text>}</Button>
 
         {/* SIGN UP BUTTON */}
         <Button onPress={() => {
+          setSignupPressed(true)
+          setTimeout(() => {
+            setSignupPressed(false)
+          }, 450);
           setModalType("SIGN UP")
           setModalIsVisible(true);
-            }} style={styles.authBtn} appearance='outline'  status='primary'>
+            }} style={[styles.authBtn, {borderBottomWidth: signupPressed ? 0 : 3}]} appearance='outline'  status='primary'>
               {evaProps => <Text  {...evaProps} style={{color:"#ffffff"}}>SIGN UP</Text>}</Button>
 
        {/* HERO TEXT */}
@@ -137,7 +147,7 @@ const styles = StyleSheet.create({
   
 
     buttonsRow: {
-      marginVertical: 100,
+      marginVertical: 80,
       flexDirection:"row",
       justifyContent:"center", 
       alignItems:"center",
@@ -149,7 +159,9 @@ const styles = StyleSheet.create({
     
 
     authBtn: {
-         borderRadius: 30, paddingHorizontal: 30, backgroundColor: "transparent",  borderColor: theme["secondary"]
+         borderRadius: 30, paddingHorizontal: 30,
+        backgroundColor: "transparent",  borderColor: theme["secondary"],
+        borderTopWidth: 0,
     },
 
     instructions: {

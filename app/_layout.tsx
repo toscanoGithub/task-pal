@@ -69,6 +69,9 @@ export default function RootLayout() {
               }
             }}/>
 
+            {/* child screen */}
+            <Stack.Screen name="(screens)/reward-screen" />
+
             {/* not found screen */}
             <Stack.Screen name="+not-found" />
             
