@@ -42,6 +42,8 @@ const ChildScreen = () => {
   const [showReward, setShowReward] = useState(false)
   const rewardLottieRef = useRef<LottieView>(null)
   const [showRevealRewardBtn,  setshowRevealRewardBtn] = useState(false)
+  const [rewardText, setRewardText] = useState()
+
   const router = useRouter()
 
   async function sendPushNotification(expoPushToken: string) {
@@ -129,7 +131,7 @@ const ChildScreen = () => {
     const subscription = Notifications.addNotificationReceivedListener(notification => {
       const title = notification.request.content.title;
       const body = notification.request.content.body;
-      // alert(`${title}: ${body}`);
+      setRewardText(notification.request.content.data.reward)
       setShowReward(true)
     });
 
@@ -177,6 +179,7 @@ const ChildScreen = () => {
             projectId,
           })
         ).data;
+        
         
         return pushTokenString;
       } catch (e: unknown) {
@@ -267,7 +270,7 @@ const ChildScreen = () => {
     }, 300);
 
     setTimeout(() => {
-      router.push("/(screens)/reward-screen")
+      router.push({pathname: "/(screens)/reward-screen", params: {reward: rewardText}})
     }, 500);
   }
 
@@ -320,10 +323,10 @@ const ChildScreen = () => {
 
       <View style={styles.calendarContainer}>
         <Calendar
-          theme={{ calendarBackground: "#617BB310" }}
+          theme={{ calendarBackground: "#ffffff" , dayTextColor:"black"}}
           date="2025-01-01"
           minDate={new Date().toLocaleDateString()}
-          maxDate="2030-12-31"
+          maxDate="2080-12-31"
           onDayPress={handleDayPress}
           monthFormat="yyyy MMM"
           renderArrow={(direction) => (

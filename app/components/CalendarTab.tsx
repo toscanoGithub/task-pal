@@ -16,6 +16,7 @@ import AddFamilyMemberForm from '../components/AddFamilyMemberForm';
 import { FamilyMember } from '@/types/Entity';
 import Popover from 'react-native-popover-view';
 import * as Notifications from 'expo-notifications';
+import RewardDialog from '../components/RewardDialog';
 
 
 interface CalendarTabProps {
@@ -37,6 +38,9 @@ const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSende
   const [expandedModal, setExpandedModal] = useState(false)
   const {fetchTasks} = useTaskContext()
   const [allDone, setAllDone] = useState(false)
+
+  const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
+  const [reward, setReward] = useState<string>();
 
   const memberSelected = (member: FamilyMember) => {
     if (member.name === selectedFamilyMember) {
@@ -143,14 +147,13 @@ const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSende
 
   async function sendPushNotification(expoPushToken: string) {
     const pt = user?.members?.find(u => u.name === notificationSender);
-    console.log("::::: pt", pt);
     
     const message = {
       to: expoPushToken,
       sound: 'default',
       title: 'Great job!',
       body: `${selectedFamilyMember} You completed all tasks of the week.`,
-      data: { ...pt },
+      data: { reward: reward },
     };
   
     await fetch('https://exp.host/--/api/v2/push/send', {
@@ -164,13 +167,26 @@ const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSende
   }
 
   const congratNotificationSender = () => {
-    const pt = user?.members?.find(m => m.name === selectedFamilyMember);
+    setIsDialogVisible(true)
     
+    
+  }
+
+  const handleAddReward = (newReward: string) => {
+  console.log("::::::::::::", reward);
+  
+    setReward(newReward);
+    
+  };
+
+  useEffect(() => {
+    if(!reward) return;
+    const pt = user?.members?.find(m => m.name === selectedFamilyMember);
     if(pt) {
       sendPushNotification(pt!.memberPushToken as unknown as string)
     }
-    
-  }
+  }, [reward])
+  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -228,10 +244,10 @@ const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSende
       {user?.members?.length ? (
         <View style={styles.calendarContainer}>
           <Calendar
-            theme={{ calendarBackground: "#617BB310" }}
+            theme={{ calendarBackground: "#ffffff" , dayTextColor:"black"}}
             date={'2025-01-01'}
             minDate={new Date().toLocaleDateString()}
-            maxDate={'2030-12-31'}
+            maxDate={'2080-12-31'}
             onDayPress={handleDayPress}
             monthFormat={'yyyy MMM'}
             renderArrow={(direction) => (
@@ -247,6 +263,13 @@ const CalendarTab: React.FC<CalendarTabProps> = ({showLikeBtn, notificationSende
           <Text style={{ textAlign: "center", color: theme['gradient-from'] }} category="h3">Please, Add Family Members</Text>
         </View>
       )}
+
+      {/* Reward dialogue */}
+      <RewardDialog
+        isVisible={isDialogVisible}
+        onClose={() => setIsDialogVisible(false)}
+        onAddReward={handleAddReward}
+      />
 
       {/* Modal */}
       <Modal animationType="slide" transparent={true} visible={modalIsVisible}>

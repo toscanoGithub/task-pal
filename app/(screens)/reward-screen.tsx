@@ -1,16 +1,23 @@
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import theme from "../theme.json"
 import { Text } from '@ui-kitten/components'
 import { LinearGradient } from 'expo-linear-gradient'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { AntDesign } from '@expo/vector-icons'
 
 const RewardScreen = () => {
+    const params = useLocalSearchParams()
+    const router = useRouter()
   return (
 
     <View style={styles.container}>
+        <TouchableOpacity style={{zIndex: 3000, position:"absolute", top: 10, left: 10,}} onPress={() => router.back()} >
+          <AntDesign name='back' size={60} color={theme.secondary} />
+        </TouchableOpacity>
         <LinearGradient style={styles.gradient}  colors={[theme['gradient-from'], theme['gradient-to']]}/>
         <View>
-        <Text style={styles.rewardText} category='h6' >Reward Screen</Text>
+        <Text style={styles.rewardText} category='h6' >{params.reward}</Text>
         </View>
     </View>
   )
